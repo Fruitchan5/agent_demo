@@ -26,7 +26,7 @@ public class LlmClient {
         Map<String, Object> requestMap = new HashMap<>();
         requestMap.put("model", AppConfig.getModelId());
         requestMap.put("max_tokens", 1024);
-        requestMap.put("system", "你是 Kiro，一个高级软工 AI 助手。你可以使用工具来完成任务。");
+        requestMap.put("system", "你是 Claude，一个高级软工 AI 助手。你可以使用工具来完成任务。");
         requestMap.put("messages", messages);
         requestMap.put("tools", tools); // 把工具列表告诉大模型
 

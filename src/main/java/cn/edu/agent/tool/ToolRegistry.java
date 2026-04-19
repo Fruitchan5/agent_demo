@@ -1,21 +1,24 @@
 package cn.edu.agent.tool;
 
-import cn.edu.agent.tool.impl.BashTool;
-import cn.edu.agent.tool.impl.EditFileTool;
-import cn.edu.agent.tool.impl.ReadFileTool;
-import cn.edu.agent.tool.impl.WriteFileTool;
+import cn.edu.agent.todo.TodoManager;
+import cn.edu.agent.tool.impl.*;
 
 import java.util.*;
 
 public class ToolRegistry {
     private final Map<String, AgentTool> tools = new HashMap<>();
+    private final TodoManager todoManager = new TodoManager();
 
     public ToolRegistry() {
-        // 在这里注册所有的工具
         register(new BashTool());
         register(new ReadFileTool());
         register(new WriteFileTool());
         register(new EditFileTool());
+        register(new TodoTool(todoManager));
+    }
+
+    public TodoManager getTodoManager() {
+        return todoManager;
     }
 
     private void register(AgentTool tool) {
@@ -24,6 +27,10 @@ public class ToolRegistry {
 
     public AgentTool getTool(String name) {
         return tools.get(name);
+    }
+
+    public Set<String> getToolNames() {
+        return Collections.unmodifiableSet(tools.keySet());
     }
 
     // 将工具列表转换成 LLM 接口需要的格式
