@@ -52,18 +52,18 @@ public class EditFileTool implements AgentTool {
         String newText = (String) input.get("new_text");
 
         if (path == null || path.trim().isEmpty()) {
-            return "❌ 错误: 必须指定文件路径";
+            return " 错误: 必须指定文件路径";
         }
 
         if (oldText == null || oldText.trim().isEmpty()) {
-            return "❌ 错误: 必须指定要替换的旧文本";
+            return " 错误: 必须指定要替换的旧文本";
         }
 
         if (newText == null) {
-            return "❌ 错误: 必须指定新文本";
+            return " 错误: 必须指定新文本";
         }
 
-        System.out.println("\n[EditFileTool] ✏️  编辑文件: " + path);
+        System.out.println("\n[EditFileTool] ✏  编辑文件: " + path);
         System.out.println("   工作目录: " + WorkspaceEnv.WORKDIR);
         System.out.println("   旧文本长度: " + oldText.length() + " 字符");
         System.out.println("   新文本长度: " + newText.length() + " 字符");
@@ -77,7 +77,7 @@ public class EditFileTool implements AgentTool {
 
             // 查找并替换文本
             if (!content.contains(oldText)) {
-                return "❌ 错误: 文件中找不到指定的旧文本\n" +
+                return " 错误: 文件中找不到指定的旧文本\n" +
                         "旧文本: " + oldText.substring(0, Math.min(50, oldText.length())) + "...";
             }
 
@@ -88,13 +88,13 @@ public class EditFileTool implements AgentTool {
             // 写回文件
             Files.writeString(safePath, newContent, StandardCharsets.UTF_8);
 
-            System.out.println("✅ 文件编辑成功");
-            return "✅ 文件已成功编辑: " + path;
+            System.out.println(" 文件编辑成功");
+            return " 文件已成功编辑: " + path;
 
         } catch (IllegalArgumentException e) {
-            return "❌ 安全错误: " + e.getMessage();
+            return " 安全错误: " + e.getMessage();
         } catch (Exception e) {
-            return "❌ 编辑文件失败: " + e.getMessage();
+            return " 编辑文件失败: " + e.getMessage();
         }
     }
 }
