@@ -19,4 +19,8 @@ public class AppConfig {
     public static String getModelId() {
         return dotenv.get("MODEL_ID", "claude-3-5-sonnet-20240620");
     }
+
+    public static int getSubagentMaxIterations() {
+        return Integer.parseInt(dotenv.get("SUBAGENT_MAX_ITERATIONS", "30"));
+    }
 }
