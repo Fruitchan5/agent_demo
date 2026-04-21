@@ -1,6 +1,7 @@
 package cn.edu.agent.tool;
 
 import cn.edu.agent.todo.TodoManager;
+import cn.edu.agent.skill.SkillLoader;
 import cn.edu.agent.tool.impl.*;
 
 import java.util.*;
@@ -20,6 +21,11 @@ public class ToolRegistry {
         registerBase(new WriteFileTool());
         registerBase(new EditFileTool());
         registerBase(new TodoTool(todoManager));
+    }
+
+    public ToolRegistry(SkillLoader skillLoader) {
+        this();
+        registerBase(new LoadSkillTool(skillLoader));
     }
 
     public TodoManager getTodoManager() {
