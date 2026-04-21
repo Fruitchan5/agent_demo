@@ -34,4 +34,4 @@ public class AgentApplication {
         ToolManager toolManager = new ToolManager(registry);
         new AgentLoop(toolManager, systemPrompt).start();
     }
-}
+} 
