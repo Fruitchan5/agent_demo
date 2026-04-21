@@ -3,15 +3,25 @@ package cn.edu.agent.core;
 import cn.edu.agent.pojo.ContentBlock;
 import cn.edu.agent.pojo.LlmResponse;
 import cn.edu.agent.tool.AgentTool;
+import cn.edu.agent.tool.AgentRole;
 import cn.edu.agent.tool.ToolManager;
 
 import java.util.*;
 
 // AgentLoop 是整个 Agent 的核心循环，负责管理对话历史、调用 LLM、执行工具，并根据 LLM 的回复决定下一步行动。
 public class AgentLoop {
-    private final LlmClient llmClient = new LlmClient();
-    private final ToolManager toolManager = new ToolManager();
+    private final LlmClient llmClient;
+    private final ToolManager toolManager;
     private final List<Map<String, Object>> chatHistory = new ArrayList<>();
+
+    public AgentLoop() {
+        this(new ToolManager());
+    }
+
+    public AgentLoop(ToolManager toolManager) {
+        this.llmClient = new LlmClient();
+        this.toolManager = toolManager;
+    }
 
     public void start() {
         Scanner scanner = new Scanner(System.in);
@@ -35,7 +45,7 @@ public class AgentLoop {
 
         while (!turnFinished) {
             try {
-                LlmResponse response = llmClient.call(chatHistory, toolManager.getToolsForLlm());
+                LlmResponse response = llmClient.call(chatHistory, toolManager.getToolsForLlm(AgentRole.PARENT));
 
                 chatHistory.add(Map.of("role", "assistant", "content", response.getContent()));
 

@@ -4,45 +4,63 @@ import cn.edu.agent.todo.TodoManager;
 import cn.edu.agent.tool.impl.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ToolRegistry {
-    private final Map<String, AgentTool> tools = new HashMap<>();
+    // 基础工具：父子共享
+    private final Map<String, AgentTool> baseTools = new LinkedHashMap<>();
+    // 父端专属工具（如 task）
+    private final Map<String, AgentTool> parentOnlyTools = new LinkedHashMap<>();
+
     private final TodoManager todoManager = new TodoManager();
 
     public ToolRegistry() {
-        register(new BashTool());
-        register(new ReadFileTool());
-        register(new WriteFileTool());
-        register(new EditFileTool());
-        register(new TodoTool(todoManager));
+        registerBase(new BashTool());
+        registerBase(new ReadFileTool());
+        registerBase(new WriteFileTool());
+        registerBase(new EditFileTool());
+        registerBase(new TodoTool(todoManager));
     }
 
     public TodoManager getTodoManager() {
         return todoManager;
     }
 
-    private void register(AgentTool tool) {
-        tools.put(tool.getName(), tool);
+    protected void registerBase(AgentTool tool) {
+        baseTools.put(tool.getName(), tool);
+    }
+
+    public void registerParentOnly(AgentTool tool) {
+        parentOnlyTools.put(tool.getName(), tool);
     }
 
     public AgentTool getTool(String name) {
-        return tools.get(name);
+        AgentTool tool = baseTools.get(name);
+        if (tool != null) {
+            return tool;
+        }
+        return parentOnlyTools.get(name);
     }
 
     public Set<String> getToolNames() {
-        return Collections.unmodifiableSet(tools.keySet());
+        Set<String> names = new LinkedHashSet<>();
+        names.addAll(baseTools.keySet());
+        names.addAll(parentOnlyTools.keySet());
+        return Collections.unmodifiableSet(names);
     }
 
     // 将工具列表转换成 LLM 接口需要的格式
-    public List<Map<String, Object>> getToolsForLlm() {
-        List<Map<String, Object>> llmTools = new ArrayList<>();
-        for (AgentTool tool : tools.values()) {
-            llmTools.add(Map.of(
-                    "name", tool.getName(),
-                    "description", tool.getDescription(),
-                    "input_schema", tool.getInputSchema()
-            ));
+    public List<Map<String, Object>> getToolsForLlm(AgentRole role) {
+        Map<String, AgentTool> result = new LinkedHashMap<>(baseTools);
+        if (role == AgentRole.PARENT) {
+            result.putAll(parentOnlyTools);
         }
-        return llmTools;
+        return result.values().stream()
+                .map(t -> Map.of(
+                        "name", t.getName(),
+                        "description", t.getDescription(),
+                        "input_schema", t.getInputSchema()
+                ))
+                .collect(Collectors.toList());
     }
 }
