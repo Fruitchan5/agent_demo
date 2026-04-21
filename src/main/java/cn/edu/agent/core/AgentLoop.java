@@ -12,15 +12,21 @@ import java.util.*;
 public class AgentLoop {
     private final LlmClient llmClient;
     private final ToolManager toolManager;
+    private final String systemPrompt;
     private final List<Map<String, Object>> chatHistory = new ArrayList<>();
 
     public AgentLoop() {
-        this(new ToolManager());
+        this(new ToolManager(), "你是 Claude，一个高级软工 AI 助手。你可以使用工具来完成任务。");
     }
 
     public AgentLoop(ToolManager toolManager) {
+        this(toolManager, "你是 Claude，一个高级软工 AI 助手。你可以使用工具来完成任务。");
+    }
+
+    public AgentLoop(ToolManager toolManager, String systemPrompt) {
         this.llmClient = new LlmClient();
         this.toolManager = toolManager;
+        this.systemPrompt = systemPrompt;
     }
 
     public void start() {
@@ -45,7 +51,11 @@ public class AgentLoop {
 
         while (!turnFinished) {
             try {
-                LlmResponse response = llmClient.call(chatHistory, toolManager.getToolsForLlm(AgentRole.PARENT));
+                LlmResponse response = llmClient.call(
+                        chatHistory,
+                        toolManager.getToolsForLlm(AgentRole.PARENT),
+                        systemPrompt
+                );
 
                 chatHistory.add(Map.of("role", "assistant", "content", response.getContent()));
 
