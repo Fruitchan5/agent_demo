@@ -32,8 +32,6 @@ public class AppConfig {
         return Integer.parseInt(getEnv("SUBAGENT_MAX_ITERATIONS", "30"));
     }
 
-    // ── s06 新增配置项 ──
-
     public static int getCompactTokenThreshold() {
         return Integer.parseInt(getEnv("COMPACT_TOKEN_THRESHOLD", "50000"));
     }
