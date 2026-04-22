@@ -14,11 +14,15 @@ public class AgentContext {
     private final int maxIterations;
     private int currentIteration;
 
+    // s06 新增：记录本次会话触发压缩的次数
+    private int compactCount;
+
     public AgentContext(AgentRole role, int maxIterations) {
         this.role = role;
         this.messages = new ArrayList<>();
         this.maxIterations = maxIterations;
         this.currentIteration = 0;
+        this.compactCount = 0;
     }
 
     public void appendMessage(String role, Object content) {
@@ -32,5 +36,8 @@ public class AgentContext {
     public void incrementIteration() {
         currentIteration++;
     }
-}
 
+    public void incrementCompactCount() {
+        compactCount++;
+    }
+}

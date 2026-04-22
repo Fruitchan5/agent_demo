@@ -22,6 +22,8 @@ public class ToolRegistry {
         registerBase(new WriteFileTool());
         registerBase(new EditFileTool());
         registerBase(new TodoTool(todoManager));
+        // s06：尝试注册 CompactTool（若类不存在则静默忽略）
+        registerOptionalBase("cn.edu.agent.tool.impl.CompactTool");
     }
 
     public ToolRegistry(SkillLoader skillLoader) {
@@ -35,6 +37,18 @@ public class ToolRegistry {
 
     protected void registerBase(AgentTool tool) {
         baseTools.put(tool.getName(), new MonitoredTool(tool));
+    }
+
+    private void registerOptionalBase(String className) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            Object instance = clazz.getDeclaredConstructor().newInstance();
+            if (instance instanceof AgentTool tool) {
+                registerBase(tool);
+            }
+        } catch (Exception ignored) {
+            // CompactTool may not be available before related feature branch is merged.
+        }
     }
 
     public void registerParentOnly(AgentTool tool) {

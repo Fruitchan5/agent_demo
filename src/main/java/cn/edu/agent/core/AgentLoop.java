@@ -1,11 +1,15 @@
 package cn.edu.agent.core;
 
+import cn.edu.agent.compact.ContextCompactor;
+import cn.edu.agent.config.AppConfig;
 import cn.edu.agent.monitor.MonitorLogger;
+import cn.edu.agent.pojo.AgentContext;
 import cn.edu.agent.pojo.ContentBlock;
 import cn.edu.agent.pojo.LlmResponse;
 import cn.edu.agent.tool.AgentTool;
 import cn.edu.agent.tool.AgentRole;
 import cn.edu.agent.tool.ToolManager;
+import cn.edu.agent.tool.impl.CompactTool;
 
 import java.util.*;
 
@@ -15,6 +19,9 @@ public class AgentLoop {
     private final ToolManager toolManager;
     private final String systemPrompt;
     private final List<Map<String, Object>> chatHistory = new ArrayList<>();
+
+    // s06：上下文压缩器
+    private final ContextCompactor compactor = new ContextCompactor();
 
     public AgentLoop() {
         this(new ToolManager(), "你是 Claude，一个高级软工 AI 助手。你可以使用工具来完成任务。");
@@ -32,7 +39,7 @@ public class AgentLoop {
 
     public void start() {
         Scanner scanner = new Scanner(System.in);
-        System.out.println(" [Claude Agent Java Edition] 已启动! (s03: todo + 问责提醒)");
+        System.out.println(" [Claude Agent Java Edition] 已启动! (s06: context compact)");
 
         while (true) {
             System.out.print("\n你 >> ");
@@ -53,12 +60,25 @@ public class AgentLoop {
         }
     }
 
-    // Agent 的自主思考循环
+    // Agent 的自主思考循环（集成三层压缩）
     private void runAgentCycle() {
         boolean turnFinished = false;
 
         while (!turnFinished) {
             try {
+                // ── Layer 1：每轮静默执行 micro compact ──
+                int keepRecent = AppConfig.getCompactKeepRecent();
+                compactor.microCompact(chatHistory, keepRecent);
+
+                // ── Layer 2：token 超阈值时自动压缩 ──
+                int threshold = AppConfig.getCompactTokenThreshold();
+                if (compactor.estimateTokens(chatHistory) > threshold) {
+                    System.out.println("[AgentLoop] token 超阈值，触发 Layer 2 自动压缩...");
+                    List<Map<String, Object>> compressed = compactor.autoCompact(chatHistory);
+                    chatHistory.clear();
+                    chatHistory.addAll(compressed);
+                }
+
                 LlmResponse response = llmClient.call(
                         chatHistory,
                         toolManager.getToolsForLlm(AgentRole.PARENT),
@@ -68,7 +88,6 @@ public class AgentLoop {
                 chatHistory.add(Map.of("role", "assistant", "content", response.getContent()));
 
                 if ("tool_use".equals(response.getStopReason())) {
-                    boolean usedTodo = responseDeclaresTodoTool(response);
                     List<Map<String, Object>> toolResults = new ArrayList<>();
 
                     for (ContentBlock block : response.getContent()) {
@@ -78,16 +97,26 @@ public class AgentLoop {
                             AgentTool tool = toolManager.getTool(block.getName());
                             String toolName = block.getName();
                             if ("todo".equals(toolName)) {
-                                toolManager.resetTodoCounter(); // 只有真正调了，才原谅它
+                                toolManager.resetTodoCounter();
                             }
+
                             String toolOutput;
                             if (tool != null) {
                                 toolOutput = tool.execute(block.getInput());
                             } else {
                                 toolOutput = "Error: Tool " + block.getName() + " not found.";
                             }
-                            System.out.println("    输出: \n" + toolOutput);
 
+                            // ── Layer 3：LLM 主动触发压缩 ──
+                            if (CompactTool.COMPACT_SIGNAL.equals(toolOutput)) {
+                                System.out.println("[AgentLoop] 收到 compact 信号，触发 Layer 3 强制压缩...");
+                                List<Map<String, Object>> compressed = compactor.autoCompact(chatHistory);
+                                chatHistory.clear();
+                                chatHistory.addAll(compressed);
+                                toolOutput = "[Context compacted successfully]";
+                            }
+
+                            System.out.println("    输出: \n" + toolOutput);
                             toolResults.add(Map.of(
                                     "type", "tool_result",
                                     "tool_use_id", block.getId(),
@@ -97,11 +126,7 @@ public class AgentLoop {
                     }
                     chatHistory.add(Map.of("role", "user", "content", toolResults));
 
-                    if (usedTodo) {
-                        toolManager.resetTodoCounter();
-                    } else {
-                        toolManager.incrementRoundCounter();
-                    }
+                    toolManager.incrementRoundCounter();
                 } else {
                     toolManager.incrementRoundCounter();
                     for (ContentBlock block : response.getContent()) {
@@ -116,17 +141,5 @@ public class AgentLoop {
                 turnFinished = true;
             }
         }
-    }
-
-    private static boolean responseDeclaresTodoTool(LlmResponse response) {
-        if (response.getContent() == null) {
-            return false;
-        }
-        for (ContentBlock block : response.getContent()) {
-            if ("tool_use".equals(block.getType()) && "todo".equals(block.getName())) {
-                return true;
-            }
-        }
-        return false;
     }
 }
