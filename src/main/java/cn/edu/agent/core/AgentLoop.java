@@ -1,5 +1,6 @@
 package cn.edu.agent.core;
 
+import cn.edu.agent.monitor.MonitorLogger;
 import cn.edu.agent.pojo.ContentBlock;
 import cn.edu.agent.pojo.LlmResponse;
 import cn.edu.agent.tool.AgentTool;
@@ -35,8 +36,15 @@ public class AgentLoop {
 
         while (true) {
             System.out.print("\n你 >> ");
-            String userInput = scanner.nextLine();
-            if ("exit".equalsIgnoreCase(userInput)) break;
+            String userInput = scanner.nextLine().trim();
+            if ("exit".equalsIgnoreCase(userInput)) {
+                MonitorLogger.flushToFile();
+                break;
+            }
+            if ("/stats".equalsIgnoreCase(userInput)) {
+                MonitorLogger.printStats();
+                continue;
+            }
 
             String contentForHistory = toolManager.prefixUserMessageIfNeeded(userInput);
             chatHistory.add(Map.of("role", "user", "content", contentForHistory));

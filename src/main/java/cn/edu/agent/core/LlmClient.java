@@ -1,16 +1,21 @@
 package cn.edu.agent.core;
 
 import cn.edu.agent.config.AppConfig;
+import cn.edu.agent.monitor.LlmInvocationRecord;
+import cn.edu.agent.monitor.SessionStats;
 import cn.edu.agent.pojo.LlmResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class LlmClient {
     private final OkHttpClient httpClient;
     private final ObjectMapper mapper = new ObjectMapper();
+
+    private static final int MAX_RETRIES = 3;
 
     public LlmClient() {
         this.httpClient = new OkHttpClient.Builder()
@@ -26,6 +31,40 @@ public class LlmClient {
     public LlmResponse call(List<Map<String, Object>> messages,
                             List<Map<String, Object>> tools,
                             String systemPrompt) throws IOException {
+        Instant start = Instant.now();
+        int retryCount = 0;
+        IOException lastException = null;
+
+        while (retryCount <= MAX_RETRIES) {
+            try {
+                LlmResponse response = doCall(messages, tools, systemPrompt);
+                long ms = Instant.now().toEpochMilli() - start.toEpochMilli();
+                int blockCount = response.getContent() == null ? 0 : response.getContent().size();
+                SessionStats.get().recordLlm(new LlmInvocationRecord(
+                        start, ms, true, null, response.getStopReason(), blockCount, retryCount));
+                return response;
+            } catch (IOException e) {
+                lastException = e;
+                retryCount++;
+                if (retryCount > MAX_RETRIES) break;
+                System.err.printf("[LlmClient] 调用失败，%ds 后重试 (%d/%d): %s%n",
+                        retryCount, retryCount, MAX_RETRIES, e.getMessage());
+                try { Thread.sleep(retryCount * 1000L); } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }
+
+        long ms = Instant.now().toEpochMilli() - start.toEpochMilli();
+        SessionStats.get().recordLlm(new LlmInvocationRecord(
+                start, ms, false, lastException.getMessage(), null, 0, retryCount - 1));
+        throw lastException;
+    }
+
+    private LlmResponse doCall(List<Map<String, Object>> messages,
+                               List<Map<String, Object>> tools,
+                               String systemPrompt) throws IOException {
         String apiKey = AppConfig.getApiKey();
         String baseUrl = AppConfig.getBaseUrl();
 

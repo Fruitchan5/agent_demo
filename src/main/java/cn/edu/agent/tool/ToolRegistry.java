@@ -1,5 +1,6 @@
 package cn.edu.agent.tool;
 
+import cn.edu.agent.monitor.MonitoredTool;
 import cn.edu.agent.todo.TodoManager;
 import cn.edu.agent.skill.SkillLoader;
 import cn.edu.agent.tool.impl.*;
@@ -33,11 +34,11 @@ public class ToolRegistry {
     }
 
     protected void registerBase(AgentTool tool) {
-        baseTools.put(tool.getName(), tool);
+        baseTools.put(tool.getName(), new MonitoredTool(tool));
     }
 
     public void registerParentOnly(AgentTool tool) {
-        parentOnlyTools.put(tool.getName(), tool);
+        parentOnlyTools.put(tool.getName(), new MonitoredTool(tool));
     }
 
     public AgentTool getTool(String name) {
