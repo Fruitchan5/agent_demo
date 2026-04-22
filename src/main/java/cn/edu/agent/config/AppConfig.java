@@ -43,4 +43,9 @@ public class AppConfig {
     public static String getTranscriptDir() {
         return getEnv("TRANSCRIPT_DIR", ".transcripts");
     }
+
+    /** 返回 MCP server 启动命令，未配置则返回 null */
+    public static String getMcpCommand() {
+        return getEnv("MCP_COMMAND", null);
+    }
 }

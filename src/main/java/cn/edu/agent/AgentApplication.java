@@ -5,6 +5,8 @@ import cn.edu.agent.core.AgentLoop;
 import cn.edu.agent.core.DefaultSubAgentRunner;
 import cn.edu.agent.core.LlmClient;
 import cn.edu.agent.core.SubAgentRunner;
+import cn.edu.agent.mcp.McpClient;
+import cn.edu.agent.mcp.McpToolAdapter;
 import cn.edu.agent.skill.SkillLoader;
 import cn.edu.agent.tool.ToolManager;
 import cn.edu.agent.tool.ToolRegistry;
@@ -12,6 +14,7 @@ import cn.edu.agent.tool.impl.TaskTool;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class AgentApplication {
     public static void main(String[] args) {
@@ -31,7 +34,28 @@ public class AgentApplication {
         int maxIter = AppConfig.getSubagentMaxIterations();
         SubAgentRunner runner = new DefaultSubAgentRunner(llmClient, registry, maxIter);
         registry.registerParentOnly(new TaskTool(runner));
+
+        // MCP：若配置了 MCP_COMMAND，启动 server 并注册所有工具
+        String mcpCommand = AppConfig.getMcpCommand();
+        McpClient mcpClient = null;
+        if (mcpCommand != null && !mcpCommand.isBlank()) {
+            try {
+                mcpClient = new McpClient(mcpCommand);
+                List<McpClient.McpToolDef> mcpTools = mcpClient.listTools();
+                for (McpClient.McpToolDef def : mcpTools) {
+                    registry.registerParentOnly(new McpToolAdapter(mcpClient, def));
+                }
+                System.out.println("[MCP] 已注册 " + mcpTools.size() + " 个工具来自: " + mcpCommand);
+            } catch (Exception e) {
+                System.err.println("[MCP] 启动失败，跳过: " + e.getMessage());
+                if (mcpClient != null) mcpClient.close();
+                mcpClient = null;
+            }
+        }
+
         ToolManager toolManager = new ToolManager(registry);
         new AgentLoop(toolManager, systemPrompt).start();
+
+        if (mcpClient != null) mcpClient.close();
     }
 } 
