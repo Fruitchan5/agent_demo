@@ -1,0 +1,710 @@
+C:\Users\C\.jdks\openjdk-22.0.2\bin\java.exe -agentlib:jdwp=transport=dt_socket,address=127.0.0.1:25311,suspend=y,server=n -javaagent:C:\Users\C\AppData\Local\JetBrains\IntelliJIdea2025.2\captureAgent\debugger-agent.jar=file:///C:/Users/C/AppData/Local/Temp/capture14535406831656313225.props -agentpath:C:\Users\C\AppData\Local\Temp\idea_libasyncProfiler_dll_temp_folder3\libasyncProfiler.dll=version,jfr,event=wall,interval=10ms,cstack=no,file=C:\Users\C\IdeaSnapshots\AgentApplication_2026_04_22_210202.jfr,dbghelppath=C:\Users\C\AppData\Local\Temp\idea_dbghelp_dll_temp_folder1\dbghelp.dll,log=C:\Users\C\AppData\Local\Temp\AgentApplication_2026_04_22_210202.jfr.log.txt,logLevel=DEBUG -Dkotlinx.coroutines.debug.enable.creation.stack.trace=false -Ddebugger.agent.enable.coroutines=true -Dkotlinx.coroutines.debug.enable.flows.stack.trace=true -Dkotlinx.coroutines.debug.enable.mutable.state.flows.stack.trace=true -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath "D:\ProgramData\Agent\agent_demo\target\classes;C:\Users\C\.m2\repository\com\squareup\okhttp3\okhttp\4.12.0\okhttp-4.12.0.jar;C:\Users\C\.m2\repository\com\squareup\okio\okio\3.6.0\okio-3.6.0.jar;C:\Users\C\.m2\repository\com\squareup\okio\okio-jvm\3.6.0\okio-jvm-3.6.0.jar;C:\Users\C\.m2\repository\org\jetbrains\kotlin\kotlin-stdlib-common\1.9.10\kotlin-stdlib-common-1.9.10.jar;C:\Users\C\.m2\repository\org\jetbrains\kotlin\kotlin-stdlib-jdk8\1.8.21\kotlin-stdlib-jdk8-1.8.21.jar;C:\Users\C\.m2\repository\org\jetbrains\kotlin\kotlin-stdlib\1.8.21\kotlin-stdlib-1.8.21.jar;C:\Users\C\.m2\repository\org\jetbrains\annotations\13.0\annotations-13.0.jar;C:\Users\C\.m2\repository\org\jetbrains\kotlin\kotlin-stdlib-jdk7\1.8.21\kotlin-stdlib-jdk7-1.8.21.jar;C:\Users\C\.m2\repository\com\fasterxml\jackson\core\jackson-databind\2.17.0\jackson-databind-2.17.0.jar;C:\Users\C\.m2\repository\com\fasterxml\jackson\core\jackson-annotations\2.17.0\jackson-annotations-2.17.0.jar;C:\Users\C\.m2\repository\com\fasterxml\jackson\core\jackson-core\2.17.0\jackson-core-2.17.0.jar;C:\Users\C\.m2\repository\net\bytebuddy\byte-buddy\1.14.9\byte-buddy-1.14.9.jar;C:\Users\C\.m2\repository\io\github\cdimascio\dotenv-java\3.0.0\dotenv-java-3.0.0.jar;C:\Users\C\.m2\repository\org\slf4j\slf4j-api\2.0.13\slf4j-api-2.0.13.jar;C:\Users\C\.m2\repository\org\slf4j\slf4j-simple\2.0.13\slf4j-simple-2.0.13.jar;D:\Program Files\JetBrains\IntelliJ IDEA 2025.2\lib\idea_rt.jar" cn.edu.agent.AgentApplication
+Connected to the target VM, address: '127.0.0.1:25311', transport: 'socket'
+ [Claude Agent Java Edition] 已启动! (s06: context compact)
+
+你 >> 读取 src/main/java/cn/edu/agent/tool/impl 目录下所有 Java 文件，统计每个文件有多少行代码
+[TOKEN] Layer1 前: 20 tokens, Layer1 后: 20 tokens, 压缩: 0 tokens (0.0%)
+    输出:
+Error: Tool thinking not found.
+[ToolManager] rounds_since_todo=1 / 3
+[TOKEN] Layer1 前: 116 tokens, Layer1 后: 116 tokens, 压缩: 0 tokens (0.0%)
+
+[BashTool] 🤖 执行命令: dir /b "src\main\java\cn\edu\agent\tool\impl"
+[MONITOR] bash         |   32ms | OK
+    输出:
+BashTool.java
+CompactTool.java
+EditFileTool.java
+LoadSkillTool.java
+ReadFileTool.java
+TaskTool.java
+TodoTool.java
+WriteFileTool.java
+[ToolManager] rounds_since_todo=2 / 3
+[TOKEN] Layer1 前: 210 tokens, Layer1 后: 210 tokens, 压缩: 0 tokens (0.0%)
+🤔 思考: 好的，我来读取这些文件并统计代码行数。
+
+[ReadFileTool] 📖 读取文件: src/main/java/cn/edu/agent/tool/impl/BashTool.java
+   工作目录: D:\ProgramData\Agent\agent_demo
+✅ 文件读取成功
+[MONITOR] read_file    |    2ms | OK
+    输出:
+package cn.edu.agent.tool.impl;
+
+import cn.edu.agent.tool.AgentTool;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.Map;
+
+public class BashTool implements AgentTool {
+    @Override
+    public String getName() {
+        return "bash";
+    }
+
+    @Override
+    public String getDescription() {
+        return "执行 Windows 命令行 (cmd) 指令。可以用来查看目录、读写文件等。";
+    }
+
+    @Override
+    public Map<String, Object> getInputSchema() {
+        // 按照 Anthropic 的 JSON Schema 格式定义参数
+        return Map.of(
+                "type", "object",
+                "properties", Map.of(
+                        "command", Map.of("type", "string", "description", "要执行的 cmd 命令")
+                ),
+                "required", new String[]{"command"}
+        );
+    }
+
+    @Override
+    public String execute(Map<String, Object> input) throws Exception {
+        String command = (String) input.get("command");
+        System.out.println("\n[BashTool] 🤖 执行命令: " + command);
+
+        ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/c", command);
+        pb.redirectErrorStream(true); // 合并正确和错误输出
+        Process process = pb.start();
+
+        // Windows 下 cmd 的输出通常是 GBK 编码
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), "GBK"));
+        StringBuilder output = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            output.append(line).append("\n");
+        }
+        process.waitFor(); // 等待命令执行完
+
+        String result = output.toString().trim();
+        return result.isEmpty() ? "命令执行成功，无输出。" : result;
+    }
+}
+
+[ReadFileTool] 📖 读取文件: src/main/java/cn/edu/agent/tool/impl/CompactTool.java
+   工作目录: D:\ProgramData\Agent\agent_demo
+✅ 文件读取成功
+[MONITOR] read_file    |    0ms | OK
+    输出:
+package cn.edu.agent.tool.impl;
+
+import cn.edu.agent.tool.AgentTool;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/**
+ * CompactTool — Layer 3 压缩工具
+ * LLM 感觉上下文过长时可主动调用此工具。
+ * execute() 本身不做压缩，只返回标记字符串 "__COMPACT__"，
+ * AgentLoop 检测到该标记后调用 ContextCompactor.autoCompact()。
+ */
+public class CompactTool implements AgentTool {
+
+    public static final String COMPACT_SIGNAL = "__COMPACT__";
+
+    @Override
+    public String getName() {
+        return "compact";
+    }
+
+    @Override
+    public String getDescription() {
+        return "当你感觉对话历史过长、影响思考效率时，主动调用此工具压缩上下文。" +
+                "压缩后历史将被摘要替换，但完整记录已落盘保存。";
+    }
+
+    @Override
+    public Map<String, Object> getInputSchema() {
+        Map<String, Object> schema = new LinkedHashMap<>();
+        schema.put("type", "object");
+
+        Map<String, Object> properties = new LinkedHashMap<>();
+        Map<String, Object> reasonProp = new LinkedHashMap<>();
+        reasonProp.put("type", "string");
+        reasonProp.put("description", "触发压缩的原因（可选，用于日志）");
+        properties.put("reason", reasonProp);
+
+        schema.put("properties", properties);
+        schema.put("required", new String[]{});
+        return schema;
+    }
+
+    @Override
+    public String execute(Map<String, Object> input) {
+        // 记录触发原因（如有）
+        if (input != null && input.containsKey("reason")) {
+            System.out.println("🗜️ LLM 主动触发压缩，原因: " + input.get("reason"));
+        } else {
+            System.out.println("🗜️ LLM 主动触发压缩");
+        }
+        // 返回标记，由 AgentLoop 检测并执行真正的压缩
+        return COMPACT_SIGNAL;
+    }
+}
+
+
+[ReadFileTool] 📖 读取文件: src/main/java/cn/edu/agent/tool/impl/EditFileTool.java
+   工作目录: D:\ProgramData\Agent\agent_demo
+✅ 文件读取成功
+[MONITOR] read_file    |    0ms | OK
+    输出:
+package cn.edu.agent.tool.impl;
+
+import cn.edu.agent.tool.AgentTool;
+import cn.edu.agent.tool.utils.WorkspaceEnv;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
+
+/**
+ * EditFile 工具 - 编辑文件内容
+ */
+public class EditFileTool implements AgentTool {
+
+    @Override
+    public String getName() {
+        return "edit_file";
+    }
+
+    @Override
+    public String getDescription() {
+        return "编辑文件内容。用新文本替换旧文本。只替换第一次匹配的内容。";
+    }
+
+    @Override
+    public Map<String, Object> getInputSchema() {
+        return Map.of(
+                "type", "object",
+                "properties", Map.of(
+                        "path", Map.of(
+                                "type", "string",
+                                "description", "要编辑的文件路径"
+                        ),
+                        "old_text", Map.of(
+                                "type", "string",
+                                "description", "要替换的旧文本"
+                        ),
+                        "new_text", Map.of(
+                                "type", "string",
+                                "description", "新文本"
+                        )
+                ),
+                "required", new String[]{"path", "old_text", "new_text"}
+        );
+    }
+
+    @Override
+    public String execute(Map<String, Object> input) throws Exception {
+        String path = (String) input.get("path");
+        String oldText = (String) input.get("old_text");
+        String newText = (String) input.get("new_text");
+
+        if (path == null || path.trim().isEmpty()) {
+            return " 错误: 必须指定文件路径";
+        }
+
+        if (oldText == null || oldText.trim().isEmpty()) {
+            return " 错误: 必须指定要替换的旧文本";
+        }
+
+        if (newText == null) {
+            return " 错误: 必须指定新文本";
+        }
+
+        System.out.println("\n[EditFileTool] ✏  编辑文件: " + path);
+        System.out.println("   工作目录: " + WorkspaceEnv.WORKDIR);
+        System.out.println("   旧文本长度: " + oldText.length() + " 字符");
+        System.out.println("   新文本长度: " + newText.length() + " 字符");
+
+        try {
+            // 使用 WorkspaceEnv 的 safePath
+            Path safePath = WorkspaceEnv.safePath(path.trim());
+
+            // 读取文件内容
+            String content = Files.readString(safePath, StandardCharsets.UTF_8);
+
+            // 查找并替换文本
+            if (!content.contains(oldText)) {
+                return " 错误: 文件中找不到指定的旧文本\n" +
+                        "旧文本: " + oldText.substring(0, Math.min(50, oldText.length())) + "...";
+            }
+
+            // 只替换第一次匹配
+            String newContent = content.replaceFirst(java.util.regex.Pattern.quote(oldText),
+                    java.util.regex.Matcher.quoteReplacement(newText));
+
+            // 写回文件
+            Files.writeString(safePath, newContent, StandardCharsets.UTF_8);
+
+            System.out.println(" 文件编辑成功");
+            return " 文件已成功编辑: " + path;
+
+        } catch (IllegalArgumentException e) {
+            return " 安全错误: " + e.getMessage();
+        } catch (Exception e) {
+            return " 编辑文件失败: " + e.getMessage();
+        }
+    }
+}
+
+
+[ReadFileTool] 📖 读取文件: src/main/java/cn/edu/agent/tool/impl/LoadSkillTool.java
+   工作目录: D:\ProgramData\Agent\agent_demo
+✅ 文件读取成功
+[MONITOR] read_file    |    0ms | OK
+    输出:
+package cn.edu.agent.tool.impl;
+
+import cn.edu.agent.skill.SkillLoader;
+import cn.edu.agent.tool.AgentTool;
+import lombok.RequiredArgsConstructor;
+
+import java.util.Map;
+
+@RequiredArgsConstructor
+public class LoadSkillTool implements AgentTool {
+
+    private final SkillLoader skillLoader;
+
+    @Override
+    public String getName() {
+        return "load_skill";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Load specialized knowledge by skill name before tackling unfamiliar topics.";
+    }
+
+    @Override
+    public Map<String, Object> getInputSchema() {
+        return Map.of(
+                "type", "object",
+                "properties", Map.of(
+                        "name", Map.of("type", "string", "description", "Skill name to load")
+                ),
+                "required", new String[]{"name"}
+        );
+    }
+
+    @Override
+    public String execute(Map<String, Object> input) {
+        String name = (String) input.get("name");
+        if (name == null || name.isBlank()) {
+            return "Error: skill name is required";
+        }
+        System.out.println("> load_skill: " + name);
+        return skillLoader.getContent(name);
+    }
+}
+
+
+[ReadFileTool] 📖 读取文件: src/main/java/cn/edu/agent/tool/impl/ReadFileTool.java
+   工作目录: D:\ProgramData\Agent\agent_demo
+✅ 文件读取成功
+[MONITOR] read_file    |    0ms | OK
+    输出:
+package cn.edu.agent.tool.impl;
+
+import cn.edu.agent.tool.AgentTool;
+import cn.edu.agent.tool.utils.WorkspaceEnv;
+
+import java.io.FileNotFoundException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
+
+/**
+ * ReadFile 工具 - 安全读取文件
+ */
+public class ReadFileTool implements AgentTool {
+
+    @Override
+    public String getName() {
+        return "read_file";
+    }
+
+    @Override
+    public String getDescription() {
+        return "安全地读取文件内容。支持限制读取行数，防止读取过大文件。";
+    }
+
+    @Override
+    public Map<String, Object> getInputSchema() {
+        return Map.of(
+                "type", "object",
+                "properties", Map.of(
+                        "path", Map.of(
+                                "type", "string",
+                                "description", "要读取的文件路径"
+                        ),
+                        "limit", Map.of(
+                                "type", "integer",
+                                "description", "最大读取行数（可选，默认读取全部）"
+                        )
+                ),
+                "required", new String[]{"path"}
+        );
+    }
+
+    @Override
+    public String execute(Map<String, Object> input) throws Exception {
+        String path = (String) input.get("path");
+        Integer limit = (Integer) input.get("limit");
+
+        if (path == null || path.trim().isEmpty()) {
+            return "❌ 错误: 必须指定文件路径";
+        }
+
+        System.out.println("\n[ReadFileTool] 📖 读取文件: " + path);
+        System.out.println("   工作目录: " + WorkspaceEnv.WORKDIR);
+
+        try {
+            // 使用 WorkspaceEnv 的 safePath
+            Path safePath = WorkspaceEnv.safePath(path.trim());
+
+            // 读取文件内容
+            String content = Files.readString(safePath, StandardCharsets.UTF_8);
+
+            // 限制行数
+            if (limit != null && limit > 0) {
+                String[] lines = content.split("\n");
+                int maxLines = Math.min(limit, lines.length);
+                StringBuilder limitedContent = new StringBuilder();
+                for (int i = 0; i < maxLines; i++) {
+                    limitedContent.append(lines[i]).append("\n");
+                }
+
+                String result = limitedContent.toString();
+
+                if (lines.length > limit) {
+                    result += String.format("\n... (还有 %d 行未显示)", lines.length - limit);
+                }
+
+                return result;
+            }
+
+            // 限制大小（最多 50KB）
+            if (content.length() > 50000) {
+                content = content.substring(0, 50000);
+                content += "\n... (文件过大，已截断)";
+            }
+
+            System.out.println("✅ 文件读取成功");
+            return content;
+
+        } catch (FileNotFoundException e) {
+            return "❌ 错误: 文件不存在: " + path;
+        } catch (IllegalArgumentException e) {
+            return "❌ 安全错误: " + e.getMessage();
+        } catch (Exception e) {
+            return "❌ 读取文件失败: " + e.getMessage();
+        }
+    }
+}
+
+
+[ReadFileTool] 📖 读取文件: src/main/java/cn/edu/agent/tool/impl/TaskTool.java
+   工作目录: D:\ProgramData\Agent\agent_demo
+✅ 文件读取成功
+[MONITOR] read_file    |    1ms | OK
+    输出:
+package cn.edu.agent.tool.impl;
+
+import cn.edu.agent.core.SubAgentRunner;
+import cn.edu.agent.tool.AgentTool;
+import lombok.RequiredArgsConstructor;
+
+import java.util.Map;
+
+@RequiredArgsConstructor
+public class TaskTool implements AgentTool {
+    private final SubAgentRunner subAgentRunner;
+
+    @Override
+    public String getName() {
+        return "task";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Spawn a subagent with a fresh context to complete a subtask. \n"
+                + "The subagent has access to all base tools (bash, read_file, write_file, edit_file, todo).\n"
+                + "Only the final summary is returned. Use this for context-heavy subtasks to keep the main context clean.";
+    }
+
+    @Override
+    public Map<String, Object> getInputSchema() {
+        return Map.of(
+                "type", "object",
+                "properties", Map.of(
+                        "prompt", Map.of(
+                                "type", "string",
+                                "description", "The task description for the subagent"
+                        )
+                ),
+                "required", new String[]{"prompt"}
+        );
+    }
+
+    @Override
+    public String execute(Map<String, Object> input) {
+        String prompt = (String) input.get("prompt");
+        if (prompt == null) {
+            prompt = "";
+        }
+        String preview = prompt.length() <= 50 ? prompt : prompt.substring(0, 50);
+        System.out.println("[TaskTool] Spawning subagent: " + preview + "...");
+        return subAgentRunner.run(prompt);
+    }
+}
+
+
+
+[ReadFileTool] 📖 读取文件: src/main/java/cn/edu/agent/tool/impl/TodoTool.java
+   工作目录: D:\ProgramData\Agent\agent_demo
+✅ 文件读取成功
+[MONITOR] read_file    |    1ms | OK
+    输出:
+package cn.edu.agent.tool.impl;
+
+import cn.edu.agent.todo.TodoManager;
+import cn.edu.agent.tool.AgentTool;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Todo 工具：委托 {@link TodoManager} 管理带状态待办，并配合单 in_progress 约束。
+ */
+public class TodoTool implements AgentTool {
+
+    private final TodoManager todoManager;
+
+    public TodoTool(TodoManager todoManager) {
+        this.todoManager = todoManager;
+    }
+
+    @Override
+    public String getName() {
+        return "todo";
+    }
+
+    @Override
+    public String getDescription() {
+        return "管理带状态的多步待办（pending / in_progress / done）。同一时间仅允许一项 in_progress。"
+                + "用于规划与追踪任务，避免跳步或丢失进度。";
+    }
+
+    @Override
+    public Map<String, Object> getInputSchema() {
+        return Map.of(
+                "type", "object",
+                "properties", Map.of(
+                        "action", Map.of(
+                                "type", "string",
+                                "description", "操作类型：add、update、list、delete",
+                                "enum", List.of("add", "update", "list", "delete")
+                        ),
+                        "id", Map.of(
+                                "type", "string",
+                                "description", "待办 ID（update / delete 必填）"
+                        ),
+                        "title", Map.of(
+                                "type", "string",
+                                "description", "标题（add 必填；update 时可选，用于改名）"
+                        ),
+                        "status", Map.of(
+                                "type", "string",
+                                "description", "状态（update 可选）：PENDING / IN_PROGRESS / COMPLETED（语义同 pending / in_progress / done）",
+                                "enum", List.of("PENDING", "IN_PROGRESS", "COMPLETED")
+                        )
+                ),
+                "required", new String[]{"action"}
+        );
+    }
+
+    @Override
+    public String execute(Map<String, Object> input) throws Exception {
+        String action = (String) input.get("action");
+        if (action == null || action.trim().isEmpty()) {
+            return "❌ 错误: 必须指定操作类型（action）";
+        }
+        System.out.println("\n[TodoTool] 📝 执行操作: " + action);
+        try {
+            return switch (action.toLowerCase()) {
+                case "add" -> todoManager.add((String) input.get("title"));
+                case "update" -> {
+                    try {
+                        yield todoManager.update(
+                                (String) input.get("id"),
+                                (String) input.get("status"),
+                                (String) input.get("title"));
+                    } catch (IllegalStateException e) {
+                        yield "❌ 状态不合法: " + e.getMessage();
+                    } catch (IllegalArgumentException e) {
+                        yield "❌ " + e.getMessage();
+                    }
+                }
+                case "list" -> todoManager.listRendered();
+                case "delete" -> todoManager.delete((String) input.get("id"));
+                default -> "❌ 错误: 未知的操作类型: " + action + "。支持的类型：add, update, list, delete";
+            };
+        } catch (Exception e) {
+            return "❌ 执行失败: " + e.getMessage();
+        }
+    }
+}
+
+
+[ReadFileTool] 📖 读取文件: src/main/java/cn/edu/agent/tool/impl/WriteFileTool.java
+   工作目录: D:\ProgramData\Agent\agent_demo
+✅ 文件读取成功
+[MONITOR] read_file    |    0ms | OK
+    输出:
+package cn.edu.agent.tool.impl;
+
+import cn.edu.agent.tool.AgentTool;
+import cn.edu.agent.tool.utils.WorkspaceEnv;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.Map;
+
+/**
+ * WriteFile 工具 - 安全写入文件
+ */
+public class WriteFileTool implements AgentTool {
+
+    @Override
+    public String getName() {
+        return "write_file";
+    }
+
+    @Override
+    public String getDescription() {
+        return "安全地写入文件内容。如果文件已存在会覆盖，如果不存在会创建。";
+    }
+
+    @Override
+    public Map<String, Object> getInputSchema() {
+        return Map.of(
+                "type", "object",
+                "properties", Map.of(
+                        "path", Map.of(
+                                "type", "string",
+                                "description", "要写入的文件路径"
+                        ),
+                        "content", Map.of(
+                                "type", "string",
+                                "description", "要写入的文件内容"
+                        )
+            ),
+        "required", new String[]{"path", "content"}
+        );
+    }
+
+    @Override
+    public String execute(Map<String, Object> input) throws Exception {
+        String path = (String) input.get("path");
+        String content = (String) input.get("content");
+
+        if (path == null || path.trim().isEmpty()) {
+            return "❌ 错误: 必须指定文件路径";
+        }
+
+        if (content == null) {
+            return "❌ 错误: 必须指定文件内容";
+        }
+
+        System.out.println("\n[WriteFileTool] ✍️  写入文件: " + path);
+        System.out.println("   工作目录: " + WorkspaceEnv.WORKDIR);
+        System.out.println("   内容长度: " + content.length() + " 字符");
+
+        try {
+            // 使用 WorkspaceEnv 的 safePath
+            Path safePath = WorkspaceEnv.safePath(path.trim());
+
+            // 创建父目录（如果不存在）
+            Path parentDir = safePath.getParent();
+            if (parentDir != null && !Files.exists(parentDir)) {
+                Files.createDirectories(parentDir);
+                System.out.println("   已创建目录: " + parentDir);
+            }
+
+            // 写入文件
+            Files.writeString(safePath, content, StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
+            System.out.println("✅ 文件写入成功");
+            return "✅ 文件已成功写入: " + path;
+
+        } catch (IllegalArgumentException e) {
+            return "❌ 安全错误: " + e.getMessage();
+        } catch (Exception e) {
+            return "❌ 写入文件失败: " + e.getMessage();
+        }
+    }
+}
+
+[ToolManager] rounds_since_todo=3 / 3
+[TOKEN] Layer1 前: 5325 tokens, Layer1 后: 5325 tokens, 压缩: 0 tokens (0.0%)
+[AgentLoop] token 超阈值，触发 Layer 2 自动压缩...
+📁 对话历史已落盘: D:\ProgramData\Agent\agent_demo\.transcripts\transcript_1776862949.jsonl
+[TOKEN] Layer2 压缩: 5325 → 79 tokens (压缩率 98.5%)
+🤔 思考: 我来统计这些文件的代码行数：
+
+[BashTool] 🤖 执行命令: cd D:\ProgramData\Agent\agent_demo && for %f in (src\main\java\cn\edu\agent\tool\impl\*.java) do @echo %f && @find /c /v "" "%f"
+[MONITOR] bash         |   79ms | OK
+    输出:
+src\main\java\cn\edu\agent\tool\impl\BashTool.java
+
+---------- SRC\MAIN\JAVA\CN\EDU\AGENT\TOOL\IMPL\BASHTOOL.JAVA: 52
+src\main\java\cn\edu\agent\tool\impl\CompactTool.java
+
+---------- SRC\MAIN\JAVA\CN\EDU\AGENT\TOOL\IMPL\COMPACTTOOL.JAVA: 56
+src\main\java\cn\edu\agent\tool\impl\EditFileTool.java
+
+---------- SRC\MAIN\JAVA\CN\EDU\AGENT\TOOL\IMPL\EDITFILETOOL.JAVA: 100
+src\main\java\cn\edu\agent\tool\impl\LoadSkillTool.java
+
+---------- SRC\MAIN\JAVA\CN\EDU\AGENT\TOOL\IMPL\LOADSKILLTOOL.JAVA: 44
+src\main\java\cn\edu\agent\tool\impl\ReadFileTool.java
+
+---------- SRC\MAIN\JAVA\CN\EDU\AGENT\TOOL\IMPL\READFILETOOL.JAVA: 99
+src\main\java\cn\edu\agent\tool\impl\TaskTool.java
+
+---------- SRC\MAIN\JAVA\CN\EDU\AGENT\TOOL\IMPL\TASKTOOL.JAVA: 49
+src\main\java\cn\edu\agent\tool\impl\TodoTool.java
+
+---------- SRC\MAIN\JAVA\CN\EDU\AGENT\TOOL\IMPL\TODOTOOL.JAVA: 89
+src\main\java\cn\edu\agent\tool\impl\WriteFileTool.java
+
+---------- SRC\MAIN\JAVA\CN\EDU\AGENT\TOOL\IMPL\WRITEFILETOOL.JAVA: 86
+[ToolManager] rounds_since_todo=4 / 3
+[TOKEN] Layer1 前: 446 tokens, Layer1 后: 446 tokens, 压缩: 0 tokens (0.0%)
+[ToolManager] rounds_since_todo=5 / 3
+Claude >> 统计完成，以下是各文件的代码行数：
+
+```
+BashTool.java         52 行
+CompactTool.java      56 行
+EditFileTool.java    100 行
+LoadSkillTool.java    44 行
+ReadFileTool.java     99 行
+TaskTool.java         49 行
+TodoTool.java         89 行
+WriteFileTool.java    86 行
+------------------------
+总计：               575 行
+```
+
+impl 目录下共8 个工具实现类，总代码量 575 行。其中 EditFileTool 和 ReadFileTool 是最大的两个文件（100 和 99 行）。
+

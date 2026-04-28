@@ -68,15 +68,24 @@ public class AgentLoop {
             try {
                 // ── Layer 1：每轮静默执行 micro compact ──
                 int keepRecent = AppConfig.getCompactKeepRecent();
+                int beforeLayer1 = compactor.estimateTokens(chatHistory);
                 compactor.microCompact(chatHistory, keepRecent);
+                int afterLayer1 = compactor.estimateTokens(chatHistory);
+                System.out.println(String.format("[TOKEN] Layer1 前: %d tokens, Layer1 后: %d tokens, 压缩: %d tokens (%.1f%%)",
+                        beforeLayer1, afterLayer1, beforeLayer1 - afterLayer1,
+                        beforeLayer1 > 0 ? (beforeLayer1 - afterLayer1) * 100.0 / beforeLayer1 : 0));
 
                 // ── Layer 2：token 超阈值时自动压缩 ──
                 int threshold = AppConfig.getCompactTokenThreshold();
                 if (compactor.estimateTokens(chatHistory) > threshold) {
+                    int beforeLayer2 = compactor.estimateTokens(chatHistory);
                     System.out.println("[AgentLoop] token 超阈值，触发 Layer 2 自动压缩...");
                     List<Map<String, Object>> compressed = compactor.autoCompact(chatHistory);
                     chatHistory.clear();
                     chatHistory.addAll(compressed);
+                    int afterLayer2 = compactor.estimateTokens(chatHistory);
+                    System.out.println(String.format("[TOKEN] Layer2 压缩: %d → %d tokens (压缩率 %.1f%%)",
+                            beforeLayer2, afterLayer2, (beforeLayer2 - afterLayer2) * 100.0 / beforeLayer2));
                 }
 
                 LlmResponse response = llmClient.call(

@@ -18,6 +18,8 @@ public class MonitoredTool implements AgentTool {
     @Override public String getDescription()                 { return delegate.getDescription(); }
     @Override public Map<String, Object> getInputSchema()    { return delegate.getInputSchema(); }
 
+
+    // 监控工具的核心：在 execute 前后记录时间、输入输出、成功失败等信息
     @Override
     public String execute(Map<String, Object> input) throws Exception {
         Instant start = Instant.now();
