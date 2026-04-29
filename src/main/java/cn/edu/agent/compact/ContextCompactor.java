@@ -61,12 +61,24 @@ public class ContextCompactor {
                 if (item instanceof Map) {
                     Map<String, Object> block = (Map<String, Object>) item;
                     if ("tool_result".equals(block.get("type"))) {
-                        // 替换为占位符，保留 tool_use_id
                         String toolName = (String) block.getOrDefault("name", "tool");
+                        Object content = block.get("content");
+                        String contentStr = content != null ? String.valueOf(content) : "";
+
                         Map<String, Object> placeholder = new LinkedHashMap<>();
                         placeholder.put("type", "tool_result");
                         placeholder.put("tool_use_id", block.get("tool_use_id"));
-                        placeholder.put("content", "[Previous: used " + toolName + "]");
+
+                        // 查询型工具：保留内容摘要；副作用型工具：简单占位符
+                        if (isQueryTool(toolName)) {
+                            String summary = contentStr.length() > 200
+                                ? contentStr.substring(0, 200) + "..."
+                                : contentStr;
+                            placeholder.put("content", "[Previous: " + toolName + " → " + summary + "]");
+                        } else {
+                            placeholder.put("content", "[Previous: used " + toolName + "]");
+                        }
+
                         compressedContent.add(placeholder);
                     } else {
                         compressedContent.add(item);
@@ -155,6 +167,18 @@ public class ContextCompactor {
     }
 
     // ---- 私有辅助方法 ----
+
+    /**
+     * 判断工具是否为查询型（需要保留结果摘要）
+     * 查询型工具：LLM 需要知道"读到了什么"才能继续推理
+     * 副作用型工具：LLM 只需知道"执行过"即可
+     */
+    private boolean isQueryTool(String toolName) {
+        return "read_file".equals(toolName)
+            || "edit_file".equals(toolName)
+            || "task_get".equals(toolName)
+            || "task_list".equals(toolName);
+    }
 
     private int toCharCount(Object obj) {
         if (obj == null) return 0;

@@ -1,0 +1,239 @@
+{
+  "sessionId" : "1776862924104",
+  "sessionStart" : "2026-04-22T13:02:04.105317300Z",
+  "durationSeconds" : 568,
+  "llmInvocations" : [ {
+    "startTime" : "2026-04-22T13:02:10.846318500Z",
+    "durationMs" : 6216,
+    "success" : true,
+    "errorMsg" : null,
+    "stopReason" : "tool_use",
+    "contentBlockCount" : 1,
+    "retryCount" : 0
+  }, {
+    "startTime" : "2026-04-22T13:02:17.079584700Z",
+    "durationMs" : 3224,
+    "success" : true,
+    "errorMsg" : null,
+    "stopReason" : "tool_use",
+    "contentBlockCount" : 1,
+    "retryCount" : 0
+  }, {
+    "startTime" : "2026-04-22T13:02:20.336534600Z",
+    "durationMs" : 8936,
+    "success" : true,
+    "errorMsg" : null,
+    "stopReason" : "tool_use",
+    "contentBlockCount" : 10,
+    "retryCount" : 0
+  }, {
+    "startTime" : "2026-04-22T13:02:29.288352100Z",
+    "durationMs" : 9267,
+    "success" : true,
+    "errorMsg" : null,
+    "stopReason" : "end_turn",
+    "contentBlockCount" : 2,
+    "retryCount" : 0
+  }, {
+    "startTime" : "2026-04-22T13:02:38.556253700Z",
+    "durationMs" : 6220,
+    "success" : true,
+    "errorMsg" : null,
+    "stopReason" : "tool_use",
+    "contentBlockCount" : 3,
+    "retryCount" : 0
+  }, {
+    "startTime" : "2026-04-22T13:02:44.857750100Z",
+    "durationMs" : 11885,
+    "success" : true,
+    "errorMsg" : null,
+    "stopReason" : "end_turn",
+    "contentBlockCount" : 2,
+    "retryCount" : 0
+  }, {
+    "startTime" : "2026-04-22T13:05:43.767435300Z",
+    "durationMs" : 8740,
+    "success" : true,
+    "errorMsg" : null,
+    "stopReason" : "tool_use",
+    "contentBlockCount" : 5,
+    "retryCount" : 0
+  }, {
+    "startTime" : "2026-04-22T13:05:52.649485Z",
+    "durationMs" : 4686,
+    "success" : true,
+    "errorMsg" : null,
+    "stopReason" : "tool_use",
+    "contentBlockCount" : 3,
+    "retryCount" : 0
+  }, {
+    "startTime" : "2026-04-22T13:05:57.365157500Z",
+    "durationMs" : 11539,
+    "success" : true,
+    "errorMsg" : null,
+    "stopReason" : "end_turn",
+    "contentBlockCount" : 2,
+    "retryCount" : 0
+  }, {
+    "startTime" : "2026-04-22T13:06:08.904530600Z",
+    "durationMs" : 9066,
+    "success" : true,
+    "errorMsg" : null,
+    "stopReason" : "end_turn",
+    "contentBlockCount" : 2,
+    "retryCount" : 0
+  }, {
+    "startTime" : "2026-04-22T13:07:33.231983900Z",
+    "durationMs" : 7938,
+    "success" : true,
+    "errorMsg" : null,
+    "stopReason" : "tool_use",
+    "contentBlockCount" : 3,
+    "retryCount" : 0
+  }, {
+    "startTime" : "2026-04-22T13:07:41.174647Z",
+    "durationMs" : 8309,
+    "success" : true,
+    "errorMsg" : null,
+    "stopReason" : "end_turn",
+    "contentBlockCount" : 2,
+    "retryCount" : 0
+  } ],
+  "toolInvocations" : [ {
+    "toolName" : "bash",
+    "startTime" : "2026-04-22T13:02:20.303685700Z",
+    "durationMs" : 32,
+    "success" : true,
+    "errorMsg" : null,
+    "inputSummary" : "{command=dir /b \"src\\main\\java\\cn\\edu\\agent\\tool\\i...",
+    "outputSummary" : "BashTool.java\nCompactTool.java\nEditFileTool.java\nLoadSkillTool.java\nReadFileTool.java\nTaskTool.java\n..."
+  }, {
+    "toolName" : "read_file",
+    "startTime" : "2026-04-22T13:02:29.272075400Z",
+    "durationMs" : 2,
+    "success" : true,
+    "errorMsg" : null,
+    "inputSummary" : "{path=src/main/java/cn/edu/agent/tool/impl/BashToo...",
+    "outputSummary" : "package cn.edu.agent.tool.impl;\r\n\r\nimport cn.edu.agent.tool.AgentTool;\r\nimport java.io.BufferedReade..."
+  }, {
+    "toolName" : "read_file",
+    "startTime" : "2026-04-22T13:02:29.274271100Z",
+    "durationMs" : 0,
+    "success" : true,
+    "errorMsg" : null,
+    "inputSummary" : "{path=src/main/java/cn/edu/agent/tool/impl/Compact...",
+    "outputSummary" : "package cn.edu.agent.tool.impl;\r\n\r\nimport cn.edu.agent.tool.AgentTool;\r\n\r\nimport java.util.LinkedHas..."
+  }, {
+    "toolName" : "read_file",
+    "startTime" : "2026-04-22T13:02:29.275272Z",
+    "durationMs" : 0,
+    "success" : true,
+    "errorMsg" : null,
+    "inputSummary" : "{path=src/main/java/cn/edu/agent/tool/impl/EditFil...",
+    "outputSummary" : "package cn.edu.agent.tool.impl;\r\n\r\nimport cn.edu.agent.tool.AgentTool;\r\nimport cn.edu.agent.tool.uti..."
+  }, {
+    "toolName" : "read_file",
+    "startTime" : "2026-04-22T13:02:29.275272Z",
+    "durationMs" : 0,
+    "success" : true,
+    "errorMsg" : null,
+    "inputSummary" : "{path=src/main/java/cn/edu/agent/tool/impl/LoadSki...",
+    "outputSummary" : "package cn.edu.agent.tool.impl;\r\n\r\nimport cn.edu.agent.skill.SkillLoader;\r\nimport cn.edu.agent.tool...."
+  }, {
+    "toolName" : "read_file",
+    "startTime" : "2026-04-22T13:02:29.276272200Z",
+    "durationMs" : 0,
+    "success" : true,
+    "errorMsg" : null,
+    "inputSummary" : "{path=src/main/java/cn/edu/agent/tool/impl/ReadFil...",
+    "outputSummary" : "package cn.edu.agent.tool.impl;\r\n\r\nimport cn.edu.agent.tool.AgentTool;\r\nimport cn.edu.agent.tool.uti..."
+  }, {
+    "toolName" : "read_file",
+    "startTime" : "2026-04-22T13:02:29.276272200Z",
+    "durationMs" : 1,
+    "success" : true,
+    "errorMsg" : null,
+    "inputSummary" : "{path=src/main/java/cn/edu/agent/tool/impl/TaskToo...",
+    "outputSummary" : "package cn.edu.agent.tool.impl;\r\n\r\nimport cn.edu.agent.core.SubAgentRunner;\r\nimport cn.edu.agent.too..."
+  }, {
+    "toolName" : "read_file",
+    "startTime" : "2026-04-22T13:02:29.277272300Z",
+    "durationMs" : 1,
+    "success" : true,
+    "errorMsg" : null,
+    "inputSummary" : "{path=src/main/java/cn/edu/agent/tool/impl/TodoToo...",
+    "outputSummary" : "package cn.edu.agent.tool.impl;\r\n\r\nimport cn.edu.agent.todo.TodoManager;\r\nimport cn.edu.agent.tool.A..."
+  }, {
+    "toolName" : "read_file",
+    "startTime" : "2026-04-22T13:02:29.278273600Z",
+    "durationMs" : 0,
+    "success" : true,
+    "errorMsg" : null,
+    "inputSummary" : "{path=src/main/java/cn/edu/agent/tool/impl/WriteFi...",
+    "outputSummary" : "package cn.edu.agent.tool.impl;\r\n\r\nimport cn.edu.agent.tool.AgentTool;\r\nimport cn.edu.agent.tool.uti..."
+  }, {
+    "toolName" : "bash",
+    "startTime" : "2026-04-22T13:02:44.777175700Z",
+    "durationMs" : 79,
+    "success" : true,
+    "errorMsg" : null,
+    "inputSummary" : "{command=cd D:\\ProgramData\\Agent\\agent_demo && for...",
+    "outputSummary" : "src\\main\\java\\cn\\edu\\agent\\tool\\impl\\BashTool.java \n\n---------- SRC\\MAIN\\JAVA\\CN\\EDU\\AGENT\\TOOL\\IMPL..."
+  }, {
+    "toolName" : "bash",
+    "startTime" : "2026-04-22T13:05:52.507629600Z",
+    "durationMs" : 94,
+    "success" : true,
+    "errorMsg" : null,
+    "inputSummary" : "{command=cd D:\\ProgramData\\Agent\\agent_demo && dir...",
+    "outputSummary" : "D:\\ProgramData\\Agent\\agent_demo\\log\nD:\\ProgramData\\Agent\\agent_demo\\.git\\logs\nD:\\ProgramData\\Agent\\a..."
+  }, {
+    "toolName" : "bash",
+    "startTime" : "2026-04-22T13:05:52.602604300Z",
+    "durationMs" : 18,
+    "success" : true,
+    "errorMsg" : null,
+    "inputSummary" : "{command=cd D:\\ProgramData\\Agent\\agent_demo && dir...",
+    "outputSummary" : "日志目录不存在"
+  }, {
+    "toolName" : "bash",
+    "startTime" : "2026-04-22T13:05:52.620922500Z",
+    "durationMs" : 28,
+    "success" : true,
+    "errorMsg" : null,
+    "inputSummary" : "{command=cd D:\\ProgramData\\Agent\\agent_demo && dir...",
+    "outputSummary" : "monitor"
+  }, {
+    "toolName" : "bash",
+    "startTime" : "2026-04-22T13:05:57.335567Z",
+    "durationMs" : 24,
+    "success" : true,
+    "errorMsg" : null,
+    "inputSummary" : "{command=cd D:\\ProgramData\\Agent\\agent_demo && dir...",
+    "outputSummary" : "tokenCompactor.txt"
+  }, {
+    "toolName" : "read_file",
+    "startTime" : "2026-04-22T13:05:57.360156300Z",
+    "durationMs" : 1,
+    "success" : true,
+    "errorMsg" : null,
+    "inputSummary" : "{path=D:\\ProgramData\\Agent\\agent_demo\\log\\tokenCom...",
+    "outputSummary" : "C:\\Users\\C\\.jdks\\openjdk-22.0.2\\bin\\java.exe -agentlib:jdwp=transport=dt_socket,address=127.0.0.1:25..."
+  }, {
+    "toolName" : "read_file",
+    "startTime" : "2026-04-22T13:05:57.362157400Z",
+    "durationMs" : 0,
+    "success" : true,
+    "errorMsg" : null,
+    "inputSummary" : "{path=D:\\ProgramData\\Agent\\agent_demo\\src\\main\\jav...",
+    "outputSummary" : "package cn.edu.agent.monitor;\n\nimport com.fasterxml.jackson.databind.ObjectMapper;\nimport com.faster..."
+  }, {
+    "toolName" : "todo",
+    "startTime" : "2026-04-22T13:07:41.170648800Z",
+    "durationMs" : 0,
+    "success" : true,
+    "errorMsg" : null,
+    "inputSummary" : "{action=list}",
+    "outputSummary" : "\uD83D\uDCCB 待办列表为空"
+  } ]
+}

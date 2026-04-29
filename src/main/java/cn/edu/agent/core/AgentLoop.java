@@ -105,7 +105,7 @@ public class AgentLoop {
                         } else if ("tool_use".equals(block.getType())) {
                             AgentTool tool = toolManager.getTool(block.getName());
                             String toolName = block.getName();
-                            if ("todo".equals(toolName)) {
+                            if ("todo".equals(toolName) || toolName.startsWith("task_")) {
                                 toolManager.resetTodoCounter();
                             }
 

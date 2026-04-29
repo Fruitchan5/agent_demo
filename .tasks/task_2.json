@@ -1,0 +1,9 @@
+{
+  "id" : 2,
+  "subject" : "设计数据库架构",
+  "description" : "用户表、权限表、日志表设计",
+  "status" : "completed",
+  "blockedBy" : [ ],
+  "blocks" : [ ],
+  "owner" : ""
+}

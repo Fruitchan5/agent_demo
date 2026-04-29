@@ -1,9 +1,12 @@
 package cn.edu.agent.tool;
 
 import cn.edu.agent.monitor.MonitoredTool;
+import cn.edu.agent.task.TaskManager;
 import cn.edu.agent.todo.TodoManager;
 import cn.edu.agent.skill.SkillLoader;
 import cn.edu.agent.tool.impl.*;
+
+import java.nio.file.Paths;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,6 +18,7 @@ public class ToolRegistry {
     private final Map<String, AgentTool> parentOnlyTools = new LinkedHashMap<>();
 
     private final TodoManager todoManager = new TodoManager();
+    private final TaskManager taskManager = new TaskManager(Paths.get(".tasks"));
 
     public ToolRegistry() {
         registerBase(new BashTool());
@@ -22,6 +26,10 @@ public class ToolRegistry {
         registerBase(new WriteFileTool());
         registerBase(new EditFileTool());
         registerBase(new TodoTool(todoManager));
+        registerBase(new TaskCreateTool(taskManager));
+        registerBase(new TaskUpdateTool(taskManager));
+        registerBase(new TaskListTool(taskManager));
+        registerBase(new TaskGetTool(taskManager));
         // s06：尝试注册 CompactTool（若类不存在则静默忽略）
         registerOptionalBase("cn.edu.agent.tool.impl.CompactTool");
     }

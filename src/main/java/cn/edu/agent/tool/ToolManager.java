@@ -10,7 +10,7 @@ package cn.edu.agent.tool;
 public class ToolManager {
 
     /** 与规范一致的提醒片段（注入到用户消息开头） */
-    public static final String TODO_NAG_REMINDER = "<reminder>Update your todos.</reminder>";
+    public static final String TODO_NAG_REMINDER = "<reminder>Update your todos or tasks (todo / task_create / task_update).</reminder>";
 
     private final ToolRegistry registry;
     private int rounds_since_todo = 0;

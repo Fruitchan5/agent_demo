@@ -1,0 +1,9 @@
+{
+  "id" : 7,
+  "subject" : "追踪 COMPACT_TOKEN_THRESHOLD 配置的使用位置",
+  "description" : "查找 env 配置中 layer2 压缩 token 阈值在代码中的使用位置和读取机制",
+  "status" : "completed",
+  "blockedBy" : [ ],
+  "blocks" : [ ],
+  "owner" : ""
+}

@@ -1,0 +1,9 @@
+{
+  "id" : 1,
+  "subject" : "实现用户认证模块",
+  "description" : "包含登录、注册、密码重置功能",
+  "status" : "completed",
+  "blockedBy" : [ ],
+  "blocks" : [ ],
+  "owner" : ""
+}
