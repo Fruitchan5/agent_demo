@@ -1,5 +1,7 @@
 package cn.edu.agent.core;
 
+import cn.edu.agent.background.BackgroundTaskManager;
+import cn.edu.agent.background.TaskNotification;
 import cn.edu.agent.compact.ContextCompactor;
 import cn.edu.agent.config.AppConfig;
 import cn.edu.agent.monitor.MonitorLogger;
@@ -23,6 +25,9 @@ public class AgentLoop {
     // s06：上下文压缩器
     private final ContextCompactor compactor = new ContextCompactor();
 
+    // s07：后台任务管理器
+    private final BackgroundTaskManager backgroundTaskManager;
+
     public AgentLoop() {
         this(new ToolManager(), "你是 Claude，一个高级软工 AI 助手。你可以使用工具来完成任务。");
     }
@@ -35,16 +40,21 @@ public class AgentLoop {
         this.llmClient = new LlmClient();
         this.toolManager = toolManager;
         this.systemPrompt = systemPrompt;
+        this.backgroundTaskManager = toolManager.getRegistry().getBackgroundTaskManager();
     }
 
     public void start() {
         Scanner scanner = new Scanner(System.in);
-        System.out.println(" [Claude Agent Java Edition] 已启动! (s06: context compact)");
+        System.out.println(" [Claude Agent Java Edition] 已启动! (s07: background tasks)");
 
         while (true) {
+            // 检查后台任务通知
+            checkBackgroundNotifications();
+
             System.out.print("\n你 >> ");
             String userInput = scanner.nextLine().trim();
             if ("exit".equalsIgnoreCase(userInput)) {
+                backgroundTaskManager.shutdown();
                 MonitorLogger.flushToFile();
                 break;
             }
@@ -149,6 +159,17 @@ public class AgentLoop {
                 System.err.println("❌ 发生错误: " + e.getMessage());
                 turnFinished = true;
             }
+        }
+    }
+
+    private void checkBackgroundNotifications() {
+        List<TaskNotification> notifications = backgroundTaskManager.drainNotifications();
+        if (!notifications.isEmpty()) {
+            System.out.println("\n=== 后台任务通知 ===");
+            for (TaskNotification notif : notifications) {
+                System.out.println(notif.format());
+            }
+            System.out.println("===================\n");
         }
     }
 }

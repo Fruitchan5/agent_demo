@@ -1,5 +1,6 @@
 package cn.edu.agent.tool;
 
+import cn.edu.agent.background.BackgroundTaskManager;
 import cn.edu.agent.monitor.MonitoredTool;
 import cn.edu.agent.task.TaskManager;
 import cn.edu.agent.todo.TodoManager;
@@ -19,6 +20,7 @@ public class ToolRegistry {
 
     private final TodoManager todoManager = new TodoManager();
     private final TaskManager taskManager = new TaskManager(Paths.get(".tasks"));
+    private final BackgroundTaskManager backgroundTaskManager = new BackgroundTaskManager();
 
     public ToolRegistry() {
         registerBase(new BashTool());
@@ -30,6 +32,9 @@ public class ToolRegistry {
         registerBase(new TaskUpdateTool(taskManager));
         registerBase(new TaskListTool(taskManager));
         registerBase(new TaskGetTool(taskManager));
+        registerBase(new BackgroundRunTool(backgroundTaskManager));
+        registerBase(new BackgroundCheckTool(backgroundTaskManager));
+        registerBase(new BackgroundCancelTool(backgroundTaskManager));
         // s06：尝试注册 CompactTool（若类不存在则静默忽略）
         registerOptionalBase("cn.edu.agent.tool.impl.CompactTool");
     }
@@ -91,5 +96,9 @@ public class ToolRegistry {
                         "input_schema", t.getInputSchema()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    public BackgroundTaskManager getBackgroundTaskManager() {
+        return backgroundTaskManager;
     }
 }
