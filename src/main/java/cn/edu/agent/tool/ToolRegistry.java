@@ -3,6 +3,7 @@ package cn.edu.agent.tool;
 import cn.edu.agent.background.BackgroundTaskManager;
 import cn.edu.agent.monitor.MonitoredTool;
 import cn.edu.agent.task.TaskManager;
+import cn.edu.agent.teammate.TeammateManager;
 import cn.edu.agent.todo.TodoManager;
 import cn.edu.agent.skill.SkillLoader;
 import cn.edu.agent.tool.impl.*;
@@ -22,6 +23,9 @@ public class ToolRegistry {
     private final TaskManager taskManager = new TaskManager(Paths.get(".tasks"));
     private final BackgroundTaskManager backgroundTaskManager = new BackgroundTaskManager();
 
+    // s09: teammate manager (initialized later to avoid circular dependency)
+    private TeammateManager teammateManager;
+
     public ToolRegistry() {
         registerBase(new BashTool());
         registerBase(new ReadFileTool());
@@ -37,11 +41,35 @@ public class ToolRegistry {
         registerBase(new BackgroundCancelTool(backgroundTaskManager));
         // s06：尝试注册 CompactTool（若类不存在则静默忽略）
         registerOptionalBase("cn.edu.agent.tool.impl.CompactTool");
+        // s09：初始化 TeammateManager 并注册所有团队工具
+        this.teammateManager = new TeammateManager(Paths.get(".team"), this);
+        registerBase(new SendMessageTool(teammateManager, "lead"));
+        registerBase(new ReadInboxTool(teammateManager, "lead"));
+        registerParentOnly(new SpawnTeammateTool(teammateManager));
+        registerParentOnly(new ListTeammatesTool(teammateManager));
+        registerParentOnly(new BroadcastTool(teammateManager));
+
+        // s10：注册协议工具
+        registerParentOnly(new ShutdownRequestTool(teammateManager, teammateManager.getProtocolManager()));
+        registerParentOnly(new PlanResponseTool(teammateManager.getProtocolManager(), teammateManager.getMessageBus()));
+        registerParentOnly(new ListPendingRequestsTool(teammateManager.getProtocolManager()));
+        registerParentOnly(new CancelRequestTool(teammateManager.getProtocolManager(), teammateManager.getMessageBus()));
     }
 
     public ToolRegistry(SkillLoader skillLoader) {
         this();
         registerBase(new LoadSkillTool(skillLoader));
+    }
+
+    public ToolRegistry(SkillLoader skillLoader, TeammateManager teammateManager) {
+        this(skillLoader);
+        this.teammateManager = teammateManager;
+        // s09: register teammate tools
+        registerBase(new SendMessageTool(teammateManager, "lead"));
+        registerBase(new ReadInboxTool(teammateManager, "lead"));
+        registerParentOnly(new SpawnTeammateTool(teammateManager));
+        registerParentOnly(new ListTeammatesTool(teammateManager));
+        registerParentOnly(new BroadcastTool(teammateManager));
     }
 
     public TodoManager getTodoManager() {
@@ -100,5 +128,9 @@ public class ToolRegistry {
 
     public BackgroundTaskManager getBackgroundTaskManager() {
         return backgroundTaskManager;
+    }
+
+    public TeammateManager getTeammateManager() {
+        return teammateManager;
     }
 }

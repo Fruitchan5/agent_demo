@@ -69,3 +69,91 @@ Skills live under `skills/<name>/SKILL.md` with YAML frontmatter (`name`, `descr
 ### MCP integration
 
 If `MCP_COMMAND` is set, `McpClient` launches the process and speaks JSON-RPC over stdio. `McpToolAdapter` wraps discovered MCP tools as `AgentTool` instances and registers them into `ToolRegistry`.
+
+### Agent Teams (s09)
+
+Persistent teammates that communicate via JSONL inboxes. Each teammate runs in its own thread with a full agent loop.
+
+**Directory structure:**
+```
+.team/
+  config.json           # team roster + status
+  inbox/
+    alice.jsonl         # append-only message queue
+    bob.jsonl
+    lead.jsonl
+  protocols/            # s10: protocol request tracking
+    shutdown_requests.jsonl
+    plan_approval_requests.jsonl
+```
+
+**Tools:**
+- `spawn_teammate(name, role, prompt)` — create a persistent teammate (parentOnly)
+- `list_teammates()` — show all teammates and their status (parentOnly)
+- `broadcast(content)` — send message to all teammates (parentOnly)
+- `send_message(to, content, msg_type?)` — send message to specific teammate or lead (baseTools)
+- `read_inbox()` — read and clear your inbox (baseTools)
+
+**Lifecycle:**
+```
+spawn -> WORKING (50 iterations max) -> IDLE (thread ends)
+       ↑                                      |
+       +-------- re-spawn to reactivate ------+
+```
+
+**Communication:**
+- Lead automatically checks inbox at the start of each agent cycle
+- Teammates check inbox at the start of each iteration
+- Messages are JSON objects: `{type, from, content, timestamp, protocol_version, metadata}`
+- Valid types: `MESSAGE`, `BROADCAST`, `SHUTDOWN_REQUEST:v1`, `SHUTDOWN_RESPONSE:v1`, `PLAN_REQUEST:v1`, `PLAN_RESPONSE:v1`, `REQUEST_CANCELLED:v1`
+
+**Teammate tools:**
+- baseTools: bash, read_file, write_file, edit_file
+- communication: send_message, read_inbox
+- NOT available: spawn_teammate, list_teammates, broadcast, task, compact
+
+### Team Protocols (s10)
+
+Request-Response协议模式，支持优雅关机和计划审批。
+
+**Shutdown Protocol:**
+```
+Lead                    Teammate
+  |                        |
+  |--shutdown_request----->|
+  | {req_id: "abc"}        |
+  |                        |
+  |<--shutdown_response----|
+  | {req_id: "abc",        |
+  |  approve: true}        |
+```
+
+**Plan Approval Protocol:**
+```
+Teammate                Lead
+  |                        |
+  |--plan_request--------->|
+  | {req_id: "xyz",        |
+  |  plan: "..."}          |
+  |                        |
+  |<--plan_response--------|
+  | {req_id: "xyz",        |
+  |  approve: true}        |
+```
+
+**Protocol Tools (Lead only):**
+- `shutdown_request(teammate)` — request teammate to shut down gracefully
+- `plan_response(request_id, approve, feedback?)` — approve or reject a plan
+- `list_pending_requests()` — show all pending protocol requests
+- `cancel_request(request_id)` — cancel a pending request
+
+**Protocol Tools (Teammate only):**
+- `shutdown_response(request_id, approve, reason?)` — respond to shutdown request
+- `plan_request(plan)` — submit plan for approval before high-risk operations
+
+**Features:**
+- Request tracking with unique IDs
+- Automatic timeout (30s for shutdown, 5min for plan approval)
+- Persistent protocol state in `.team/protocols/*.jsonl`
+- Protocol versioning for future compatibility
+- FSM states: pending → approved/rejected/timeout/cancelled
