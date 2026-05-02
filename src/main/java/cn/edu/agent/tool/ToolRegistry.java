@@ -50,10 +50,15 @@ public class ToolRegistry {
         registerParentOnly(new BroadcastTool(teammateManager));
 
         // s10：注册协议工具
+        // Lead专属工具
         registerParentOnly(new ShutdownRequestTool(teammateManager, teammateManager.getProtocolManager()));
         registerParentOnly(new PlanResponseTool(teammateManager.getProtocolManager(), teammateManager.getMessageBus()));
         registerParentOnly(new ListPendingRequestsTool(teammateManager.getProtocolManager()));
         registerParentOnly(new CancelRequestTool(teammateManager.getProtocolManager(), teammateManager.getMessageBus()));
+
+        // Teammate可用的协议工具（注册stub，实际执行在TeammateManager中）
+        registerBase(new PlanRequestToolStub());
+        registerBase(new ShutdownResponseToolStub());
     }
 
     public ToolRegistry(SkillLoader skillLoader) {

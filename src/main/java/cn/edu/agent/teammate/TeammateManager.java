@@ -158,14 +158,14 @@ public class TeammateManager {
         if (tool == null) {
             return "Unknown tool: " + toolName;
         }
-        
+
         if ("send_message".equals(toolName)) {
             String to = (String) input.get("to");
             String content = (String) input.get("content");
             String msgType = (String) input.getOrDefault("msg_type", "MESSAGE");
             return messageBus.send(sender, to, content, msgType);
         }
-        
+
         if ("read_inbox".equals(toolName)) {
             try {
                 List<Message> inbox = messageBus.readInbox(sender);
@@ -174,7 +174,59 @@ public class TeammateManager {
                 return "Error reading inbox: " + e.getMessage();
             }
         }
-        
+
+        // s10: Handle teammate protocol tools that need sender context
+        if ("plan_request".equals(toolName)) {
+            try {
+                String plan = (String) input.get("plan");
+                String requestId = protocolManager.initiateRequest(
+                    "plan_approval",
+                    "lead",
+                    Map.of("plan", plan, "from", sender),
+                    java.time.Duration.ofMinutes(5)
+                );
+
+                messageBus.send(
+                    sender,
+                    "lead",
+                    "Plan approval request:\n" + plan,
+                    "PLAN_REQUEST:v1",
+                    Map.of("request_id", requestId, "protocol_version", "1.0")
+                );
+
+                return "Plan request " + requestId + " submitted (status: pending). " +
+                       "Waiting for lead approval before proceeding.";
+            } catch (Exception e) {
+                return "Error submitting plan request: " + e.getMessage();
+            }
+        }
+
+        if ("shutdown_response".equals(toolName)) {
+            try {
+                String requestId = (String) input.get("request_id");
+                boolean approve = (boolean) input.get("approve");
+                String reason = (String) input.getOrDefault("reason", "");
+
+                protocolManager.handleResponse(requestId, approve, reason);
+
+                messageBus.send(
+                    sender,
+                    "lead",
+                    reason,
+                    "SHUTDOWN_RESPONSE:v1",
+                    Map.of("request_id", requestId, "approve", approve, "protocol_version", "1.0")
+                );
+
+                if (approve) {
+                    return "SHUTDOWN_APPROVED:" + requestId;
+                } else {
+                    return "Shutdown request rejected: " + reason;
+                }
+            } catch (Exception e) {
+                return "Error responding to shutdown: " + e.getMessage();
+            }
+        }
+
         try {
             return tool.execute(input);
         } catch (Exception e) {
