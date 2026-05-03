@@ -1,4 +1,0 @@
-{"event":"worktree.create.before","ts":1777798559618,"worktree":{"name":"auth-refactor","base_ref":"HEAD"},"task":{"id":1}}
-{"event":"worktree.create.after","ts":1777798560006,"worktree":{"status":"active","path":"D:\\ProgramData\\Agent\\agent_demo\\.worktrees\\auth-refactor","branch":"wt/auth-refactor","name":"auth-refactor"},"task":{"id":1}}
-{"event":"worktree.create.before","ts":1777798565981,"task":{"id":2},"worktree":{"base_ref":"HEAD","name":"ui-login"}}
-{"event":"worktree.create.after","ts":1777798566374,"task":{"id":2},"worktree":{"branch":"wt/ui-login","name":"ui-login","status":"active","path":"D:\\ProgramData\\Agent\\agent_demo\\.worktrees\\ui-login"}}
