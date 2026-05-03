@@ -1,9 +1,0 @@
-{
-  "id" : 3,
-  "subject" : "编写API文档",
-  "description" : "使用Swagger生成RESTful API文档",
-  "status" : "completed",
-  "blockedBy" : [ ],
-  "blocks" : [ ],
-  "owner" : ""
-}

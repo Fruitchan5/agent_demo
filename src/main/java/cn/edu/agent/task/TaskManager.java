@@ -84,6 +84,51 @@ public class TaskManager {
         return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
     }
 
+    // ── s11: autonomous agent support ────────────────────────────────────────
+
+    /**
+     * 扫描未认领的任务（无阻塞依赖）
+     * 条件：status == "pending" && owner 为空 && blockedBy 为空
+     */
+    public synchronized List<Task> scanUnclaimedTasks() throws IOException {
+        return loadAll().stream()
+            .filter(t -> "pending".equals(t.getStatus()))
+            .filter(t -> t.getOwner() == null || t.getOwner().isEmpty())
+            .filter(t -> t.getBlockedBy().isEmpty())
+            .sorted(Comparator.comparingInt(Task::getId))
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * 认领任务（原子操作）
+     * 验证条件后将任务状态改为 in_progress，设置 owner
+     */
+    public synchronized ClaimResult claimTask(int taskId, String owner) {
+        try {
+            Task task = load(taskId);
+
+            // 验证认领条件
+            if (task.getOwner() != null && !task.getOwner().isEmpty()) {
+                return ClaimResult.error("Task already claimed by " + task.getOwner());
+            }
+            if (!"pending".equals(task.getStatus())) {
+                return ClaimResult.error("Task status is " + task.getStatus());
+            }
+            if (!task.getBlockedBy().isEmpty()) {
+                return ClaimResult.error("Task is blocked by " + task.getBlockedBy());
+            }
+
+            // 原子性更新
+            task.setOwner(owner);
+            task.setStatus("in_progress");
+            save(task);
+
+            return ClaimResult.success(task);
+        } catch (IllegalArgumentException | IOException e) {
+            return ClaimResult.error(e.getMessage());
+        }
+    }
+
     // ── private ──────────────────────────────────────────────────────────────
 
     private Path getTaskFilePath(int taskId) {

@@ -1,0 +1,39 @@
+{
+  "teamName" : "agent_demo_team",
+  "members" : [ {
+    "name" : "Alice",
+    "role" : "接口设计和功能分析专家",
+    "status" : "SHUTDOWN",
+    "spawnedAt" : "2026-05-01T14:46:32Z"
+  }, {
+    "name" : "Candy",
+    "role" : "代码审阅和测试专家",
+    "status" : "SHUTDOWN",
+    "spawnedAt" : "2026-05-01T14:46:32Z"
+  }, {
+    "name" : "alice",
+    "role" : "backend-developer",
+    "status" : "SHUTDOWN",
+    "spawnedAt" : "2026-05-02T07:44:04.459008300Z"
+  }, {
+    "name" : "bob",
+    "role" : "full-stack-developer",
+    "status" : "SHUTDOWN",
+    "spawnedAt" : "2026-05-02T08:05:39.822119600Z"
+  }, {
+    "name" : "charlie",
+    "role" : "feature-developer",
+    "status" : "IDLE",
+    "spawnedAt" : "2026-05-02T08:10:36.512274700Z"
+  }, {
+    "name" : "carol",
+    "role" : "test-engineer",
+    "status" : "SHUTDOWN",
+    "spawnedAt" : "2026-05-02T12:44:38.901034700Z"
+  }, {
+    "name" : "dave",
+    "role" : "database-specialist",
+    "status" : "SHUTDOWN",
+    "spawnedAt" : "2026-05-02T12:44:38.930519400Z"
+  } ]
+}

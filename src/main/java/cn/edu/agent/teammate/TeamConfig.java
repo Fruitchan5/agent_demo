@@ -1,5 +1,6 @@
 package cn.edu.agent.teammate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,7 +42,9 @@ public class TeamConfig {
         @JsonProperty("spawnedAt")
         private String spawnedAt;
     }
-    
+
+
+
     public static TeamConfig load(Path configPath) {
         if (!Files.exists(configPath)) {
             return new TeamConfig();
@@ -70,7 +73,8 @@ public class TeamConfig {
             .findFirst()
             .orElse(null);
     }
-    
+
+    @JsonIgnore
     public List<String> getMemberNames() {
         return members.stream()
             .map(TeamMember::getName)

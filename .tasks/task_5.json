@@ -1,9 +1,0 @@
-{
-  "id" : 5,
-  "subject" : "编写测试代码",
-  "description" : "编写单元测试用例",
-  "status" : "completed",
-  "blockedBy" : [ ],
-  "blocks" : [ ],
-  "owner" : ""
-}

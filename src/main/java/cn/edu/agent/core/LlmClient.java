@@ -18,9 +18,11 @@ public class LlmClient {
     private static final int MAX_RETRIES = 3;
 
     public LlmClient() {
+        int timeoutSeconds = AppConfig.getLlmTimeoutSeconds();
         this.httpClient = new OkHttpClient.Builder()
-                .connectTimeout(60, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
+                .connectTimeout(timeoutSeconds, TimeUnit.SECONDS)
+                .readTimeout(timeoutSeconds, TimeUnit.SECONDS)
+                .writeTimeout(timeoutSeconds, TimeUnit.SECONDS)
                 .build();
     }
 

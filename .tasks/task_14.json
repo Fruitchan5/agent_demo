@@ -1,9 +1,0 @@
-{
-  "id" : 14,
-  "subject" : "为 deleteCompletedCluster 添加测试用例",
-  "description" : "当前测试没有覆盖自动删除功能。需要添加测试验证：\n1. 独立任务完成后自动删除\n2. 依赖集群全部完成后自动删除\n3. 部分完成的集群不删除\n\n这样可以确保功能正常工作，也作为功能文档",
-  "status" : "in_progress",
-  "blockedBy" : [ ],
-  "blocks" : [ ],
-  "owner" : ""
-}

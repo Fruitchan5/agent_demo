@@ -129,4 +129,36 @@ public class AppConfig {
         String val = getEnv("BACKGROUND_USE_THREAD_POOL", "true");
         return Boolean.parseBoolean(val);
     }
+
+    /** 返回LLM HTTP超时时间（秒），默认 180 */
+    public static int getLlmTimeoutSeconds() {
+        String val = getEnv("LLM_TIMEOUT_SECONDS", "180");
+        try {
+            return Integer.parseInt(val);
+        } catch (NumberFormatException e) {
+            return 180;
+        }
+    }
+
+    // ── s11: autonomous agent configuration ─────────────────────────────────
+
+    /** 返回空闲轮询间隔（秒），默认 5 */
+    public static int getIdlePollInterval() {
+        String val = getEnv("IDLE_POLL_INTERVAL", "5");
+        try {
+            return Integer.parseInt(val);
+        } catch (NumberFormatException e) {
+            return 5;
+        }
+    }
+
+    /** 返回空闲超时时间（秒），默认 60 */
+    public static int getIdleTimeout() {
+        String val = getEnv("IDLE_TIMEOUT", "60");
+        try {
+            return Integer.parseInt(val);
+        } catch (NumberFormatException e) {
+            return 60;
+        }
+    }
 }

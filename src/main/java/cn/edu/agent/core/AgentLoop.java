@@ -28,6 +28,9 @@ public class AgentLoop {
     // s07：后台任务管理器
     private final BackgroundTaskManager backgroundTaskManager;
 
+    // s09：团队管理器
+    private final cn.edu.agent.teammate.TeammateManager teammateManager;
+
     public AgentLoop() {
         this(new ToolManager(), "你是 Claude，一个高级软工 AI 助手。你可以使用工具来完成任务。");
     }
@@ -41,6 +44,7 @@ public class AgentLoop {
         this.toolManager = toolManager;
         this.systemPrompt = systemPrompt;
         this.backgroundTaskManager = toolManager.getRegistry().getBackgroundTaskManager();
+        this.teammateManager = toolManager.getRegistry().getTeammateManager();
     }
 
     public void start() {
@@ -76,6 +80,24 @@ public class AgentLoop {
 
         while (!turnFinished) {
             try {
+                // ── s09: lead 自动检查 inbox ──
+                if (teammateManager != null) {
+                    try {
+                        java.util.List<cn.edu.agent.teammate.Message> inbox =
+                            teammateManager.getMessageBus().readInbox("lead");
+                        if (!inbox.isEmpty()) {
+                            com.fasterxml.jackson.databind.ObjectMapper mapper =
+                                new com.fasterxml.jackson.databind.ObjectMapper();
+                            String inboxJson = mapper.writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(inbox);
+                            chatHistory.add(Map.of("role", "user",
+                                "content", "<inbox>" + inboxJson + "</inbox>"));
+                        }
+                    } catch (Exception e) {
+                        System.err.println("[Lead] Failed to check inbox: " + e.getMessage());
+                    }
+                }
+
                 // ── Layer 1：每轮静默执行 micro compact ──
                 int keepRecent = AppConfig.getCompactKeepRecent();
                 int beforeLayer1 = compactor.estimateTokens(chatHistory);

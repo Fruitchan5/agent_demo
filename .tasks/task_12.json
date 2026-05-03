@@ -1,9 +1,0 @@
-{
-  "id" : 12,
-  "subject" : "transform",
-  "description" : "Transform AST with refactoring rules",
-  "status" : "completed",
-  "blockedBy" : [ ],
-  "blocks" : [ ],
-  "owner" : ""
-}

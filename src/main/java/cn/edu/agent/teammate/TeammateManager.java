@@ -4,6 +4,7 @@ import cn.edu.agent.config.AppConfig;
 import cn.edu.agent.core.LlmClient;
 import cn.edu.agent.pojo.ContentBlock;
 import cn.edu.agent.pojo.LlmResponse;
+import cn.edu.agent.task.TaskManager;
 import cn.edu.agent.teammate.protocol.ProtocolManager;
 import cn.edu.agent.tool.AgentRole;
 import cn.edu.agent.tool.AgentTool;
@@ -30,9 +31,10 @@ public class TeammateManager {
     private final ExecutorService executor;
     private final LlmClient llmClient;
     private final ToolRegistry toolRegistry;
+    private final TaskManager taskManager;  // s11: for autonomous task claiming
     private final Map<String, TeammateSession> sessions = new ConcurrentHashMap<>();
 
-    public TeammateManager(Path teamDir, ToolRegistry toolRegistry) {
+    public TeammateManager(Path teamDir, ToolRegistry toolRegistry, TaskManager taskManager) {
         this.teamDir = teamDir;
         this.configPath = teamDir.resolve("config.json");
         this.config = TeamConfig.load(configPath);
@@ -43,6 +45,7 @@ public class TeammateManager {
             throw new RuntimeException("Failed to initialize ProtocolManager", e);
         }
         this.toolRegistry = toolRegistry;
+        this.taskManager = taskManager;
         this.llmClient = new LlmClient();
 
         this.executor = Executors.newCachedThreadPool(r -> {
@@ -106,49 +109,120 @@ public class TeammateManager {
     }
     
     private void teammateLoop(String name, String role, String prompt) {
+        String teamName = config.getTeamName();
         String systemPrompt = String.format(
-            "You are '%s', role: %s, at %s. Use send_message to communicate. Complete your task.",
-            name, role, System.getProperty("user.dir")
+            "You are '%s', role: %s, team: %s, at %s. " +
+            "Use idle tool when you have no more work. You will auto-claim new tasks.",
+            name, role, teamName, System.getProperty("user.dir")
         );
-        
+
         List<Map<String, Object>> messages = new ArrayList<>();
         messages.add(Map.of("role", "user", "content", prompt));
-        
+
         List<Map<String, Object>> tools = toolRegistry.getToolsForLlm(AgentRole.TEAMMATE);
-        
-        for (int i = 0; i < MAX_ITERATIONS; i++) {
-            try {
-                List<Message> inbox = messageBus.readInbox(name);
-                for (Message msg : inbox) {
-                    messages.add(Map.of("role", "user", "content", msg.toJson()));
-                }
-                
-                LlmResponse response = llmClient.call(messages, tools, systemPrompt);
-                messages.add(Map.of("role", "assistant", "content", response.getContent()));
-                
-                if (!"tool_use".equals(response.getStopReason())) {
-                    break;
-                }
-                
-                List<Map<String, Object>> toolResults = new ArrayList<>();
-                for (ContentBlock block : response.getContent()) {
-                    if ("tool_use".equals(block.getType())) {
-                        String output = executeTeammateTool(name, block.getName(), block.getInput());
-                        System.out.println("  [" + name + "] " + block.getName() + ": " + 
-                            (output.length() > 120 ? output.substring(0, 120) + "..." : output));
-                        
-                        toolResults.add(Map.of(
-                            "type", "tool_result",
-                            "tool_use_id", block.getId(),
-                            "content", output
-                        ));
+
+        while (true) {
+            // ===== WORK 阶段 =====
+            boolean idleRequested = false;
+
+            for (int i = 0; i < MAX_ITERATIONS; i++) {
+                try {
+                    // 检查收件箱（每轮开始）
+                    List<Message> inbox = messageBus.readInbox(name);
+                    for (Message msg : inbox) {
+                        if ("SHUTDOWN_REQUEST:v1".equals(msg.getType())) {
+                            updateMemberStatus(name, "SHUTDOWN");
+                            return;  // 立即退出
+                        }
+                        messages.add(Map.of("role", "user", "content", msg.toJson()));
                     }
+
+                    LlmResponse response = llmClient.call(messages, tools, systemPrompt);
+                    messages.add(Map.of("role", "assistant", "content", response.getContent()));
+
+                    if (!"tool_use".equals(response.getStopReason())) {
+                        return;  // 非工具调用结束，退出
+                    }
+
+                    List<Map<String, Object>> toolResults = new ArrayList<>();
+                    for (ContentBlock block : response.getContent()) {
+                        if ("tool_use".equals(block.getType())) {
+                            if ("idle".equals(block.getName())) {
+                                idleRequested = true;
+                                toolResults.add(Map.of(
+                                    "type", "tool_result",
+                                    "tool_use_id", block.getId(),
+                                    "content", "Entering idle phase. Will poll for new tasks."
+                                ));
+                            } else {
+                                String output = executeTeammateTool(name, block.getName(), block.getInput());
+                                System.out.println("  [" + name + "] " + block.getName() + ": " +
+                                    (output.length() > 120 ? output.substring(0, 120) + "..." : output));
+
+                                toolResults.add(Map.of(
+                                    "type", "tool_result",
+                                    "tool_use_id", block.getId(),
+                                    "content", output
+                                ));
+                            }
+                        }
+                    }
+                    messages.add(Map.of("role", "user", "content", toolResults));
+
+                    if (idleRequested) {
+                        break;  // 进入 IDLE 阶段
+                    }
+
+                } catch (Exception e) {
+                    System.err.println("[Teammate " + name + "] Error: " + e.getMessage());
+                    return;
                 }
-                messages.add(Map.of("role", "user", "content", toolResults));
-                
-            } catch (Exception e) {
-                System.err.println("[Teammate " + name + "] Error: " + e.getMessage());
-                break;
+            }
+
+            if (!idleRequested) {
+                // 达到最大迭代次数，退出
+                return;
+            }
+
+            // ===== IDLE 阶段 =====
+            updateMemberStatus(name, "IDLE");
+            IdlePoller poller = new IdlePoller(name, messageBus, taskManager);
+            IdlePollResult pollResult = poller.poll();
+
+            switch (pollResult.getType()) {
+                case MESSAGES:
+                    // 收到消息，恢复工作
+                    for (Message msg : pollResult.getMessages()) {
+                        messages.add(Map.of("role", "user", "content", msg.toJson()));
+                    }
+                    updateMemberStatus(name, "WORKING");
+                    continue;
+
+                case TASK_CLAIMED:
+                    // 认领到任务，恢复工作
+                    cn.edu.agent.task.Task task = pollResult.getClaimedTask();
+
+                    // 检查是否需要重注入身份
+                    IdentityManager.reinjectIdentity(messages, name, role, teamName);
+
+                    // 添加任务提示
+                    String taskPrompt = String.format(
+                        "<auto-claimed>Task #%d: %s\n%s</auto-claimed>",
+                        task.getId(), task.getSubject(), task.getDescription()
+                    );
+                    messages.add(Map.of("role", "user", "content", taskPrompt));
+                    messages.add(Map.of(
+                        "role", "assistant",
+                        "content", "Claimed task #" + task.getId() + ". Working on it."
+                    ));
+
+                    updateMemberStatus(name, "WORKING");
+                    continue;
+
+                case TIMEOUT:
+                    // 超时，关闭线程
+                    updateMemberStatus(name, "SHUTDOWN");
+                    return;
             }
         }
     }

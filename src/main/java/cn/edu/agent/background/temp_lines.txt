@@ -1,0 +1,18 @@
+            boolean finished = process.waitFor(timeoutSeconds, TimeUnit.SECONDS);
+
+            // 等待输出捕获完成（最多5秒）
+            String output = capture.getOutput(5);
+
+            if (!finished) {
+                process.destroyForcibly();
+                taskInfo.transitionTo(TaskStatus.TIMEOUT);
+                taskInfo.setOutput(output + "\n... (timeout after " + timeoutSeconds + "s)");
+                taskInfo.setExitCode(-1);
+            } else {
+                int exitCode = process.exitValue();
+                taskInfo.setExitCode(exitCode);
+                taskInfo.setOutput(output);
+                taskInfo.transitionTo(exitCode == 0 ? TaskStatus.COMPLETED : TaskStatus.FAILED);
+            }
+
+            // 入队通知

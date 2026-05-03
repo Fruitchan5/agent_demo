@@ -146,28 +146,35 @@ public class BackgroundTaskManager {
 
     private void executeTask(TaskInfo taskInfo, int timeoutSeconds) {
         try {
+            System.out.println("[DEBUG] executeTask started for " + taskInfo.getTaskId());
             taskInfo.transitionTo(TaskStatus.RUNNING);
 
             ProcessBuilder pb = createProcessBuilder(taskInfo.getCommand(), taskInfo.getWorkDir());
             Process process = pb.start();
             taskInfo.setProcess(process);
+            System.out.println("[DEBUG] Process started, PID: " + process.pid());
 
             // 启动输出捕获线程（异步）
             OutputCapture capture = new OutputCapture(process, AppConfig.getBackgroundOutputMaxChars());
             capture.start();
+            System.out.println("[DEBUG] Output capture started");
 
             // 等待进程完成或超时
+            System.out.println("[DEBUG] Waiting for process, timeout: " + timeoutSeconds + "s");
             boolean finished = process.waitFor(timeoutSeconds, TimeUnit.SECONDS);
-
-            // 等待输出捕获完成（最多5秒）
-            String output = capture.getOutput(5);
+            System.out.println("[DEBUG] waitFor returned: " + finished);
 
             if (!finished) {
+                // 超时：先强制终止进程
                 process.destroyForcibly();
+                // 等待输出捕获完成（最多2秒，因为进程已被终止）
+                String output = capture.getOutput(2);
                 taskInfo.transitionTo(TaskStatus.TIMEOUT);
                 taskInfo.setOutput(output + "\n... (timeout after " + timeoutSeconds + "s)");
                 taskInfo.setExitCode(-1);
             } else {
+                // 正常完成：等待输出捕获完成（最多5秒）
+                String output = capture.getOutput(5);
                 int exitCode = process.exitValue();
                 taskInfo.setExitCode(exitCode);
                 taskInfo.setOutput(output);
@@ -178,17 +185,21 @@ public class BackgroundTaskManager {
             enqueueNotification(taskInfo);
 
         } catch (IOException e) {
+            System.out.println("[DEBUG] IOException: " + e.getMessage());
             taskInfo.transitionTo(TaskStatus.START_FAILED);
             taskInfo.setErrorMessage(e.getMessage());
             taskInfo.setOutput("Failed to start: " + e.getMessage());
             enqueueNotification(taskInfo);
         } catch (InterruptedException e) {
+            System.out.println("[DEBUG] InterruptedException: " + e.getMessage());
             taskInfo.transitionTo(TaskStatus.CANCELLED);
             taskInfo.setOutput("Task interrupted");
             enqueueNotification(taskInfo);
             Thread.currentThread().interrupt();
         } catch (Exception e) {
             // 捕获所有其他异常（如 NullPointerException, IllegalArgumentException 等）
+            System.out.println("[DEBUG] Exception: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            e.printStackTrace();
             taskInfo.transitionTo(TaskStatus.START_FAILED);
             taskInfo.setErrorMessage(e.getClass().getSimpleName() + ": " + e.getMessage());
             taskInfo.setOutput("Failed to execute: " + e.getMessage());

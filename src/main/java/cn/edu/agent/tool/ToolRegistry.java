@@ -1,5 +1,7 @@
 package cn.edu.agent.tool;
 
+import cn.edu.agent.auth.AuthenticationService;
+import cn.edu.agent.auth.UserRepository;
 import cn.edu.agent.background.BackgroundTaskManager;
 import cn.edu.agent.monitor.MonitoredTool;
 import cn.edu.agent.task.TaskManager;
@@ -22,11 +24,16 @@ public class ToolRegistry {
     private final TodoManager todoManager = new TodoManager();
     private final TaskManager taskManager = new TaskManager(Paths.get(".tasks"));
     private final BackgroundTaskManager backgroundTaskManager = new BackgroundTaskManager();
+    private final AuthenticationService authenticationService;
 
     // s09: teammate manager (initialized later to avoid circular dependency)
     private TeammateManager teammateManager;
 
     public ToolRegistry() {
+        // Initialize authentication service
+        UserRepository userRepository = new UserRepository(".auth/users.json");
+        this.authenticationService = new AuthenticationService(userRepository);
+        
         registerBase(new BashTool());
         registerBase(new ReadFileTool());
         registerBase(new WriteFileTool());
@@ -39,10 +46,18 @@ public class ToolRegistry {
         registerBase(new BackgroundRunTool(backgroundTaskManager));
         registerBase(new BackgroundCheckTool(backgroundTaskManager));
         registerBase(new BackgroundCancelTool(backgroundTaskManager));
+        
+        // Register authentication tools
+        registerBase(new LoginTool(authenticationService));
+        registerBase(new LogoutTool(authenticationService));
+        registerBase(new RegisterTool(authenticationService));
+        registerBase(new ValidateSessionTool(authenticationService));
+        
         // s06：尝试注册 CompactTool（若类不存在则静默忽略）
         registerOptionalBase("cn.edu.agent.tool.impl.CompactTool");
         // s09：初始化 TeammateManager 并注册所有团队工具
-        this.teammateManager = new TeammateManager(Paths.get(".team"), this);
+        // s11：传入 TaskManager 以支持自主任务认领
+        this.teammateManager = new TeammateManager(Paths.get(".team"), this, taskManager);
         registerBase(new SendMessageTool(teammateManager, "lead"));
         registerBase(new ReadInboxTool(teammateManager, "lead"));
         registerParentOnly(new SpawnTeammateTool(teammateManager));
@@ -59,6 +74,9 @@ public class ToolRegistry {
         // Teammate可用的协议工具（注册stub，实际执行在TeammateManager中）
         registerBase(new PlanRequestToolStub());
         registerBase(new ShutdownResponseToolStub());
+
+        // s11：注册 idle 工具（teammate 可用）
+        registerBase(new IdleTool());
     }
 
     public ToolRegistry(SkillLoader skillLoader) {

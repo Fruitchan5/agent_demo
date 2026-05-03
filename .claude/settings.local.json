@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(timeout 10 mvn exec:java -Dexec.mainClass=\"cn.edu.agent.AgentApplication\")",
+      "Bash(mvn compile *)"
+    ]
+  }
+}

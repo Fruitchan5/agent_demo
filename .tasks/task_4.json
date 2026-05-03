@@ -1,9 +1,0 @@
-{
-  "id" : 4,
-  "subject" : "准备测试环境",
-  "description" : "配置基础测试环境和依赖",
-  "status" : "completed",
-  "blockedBy" : [ ],
-  "blocks" : [ ],
-  "owner" : ""
-}

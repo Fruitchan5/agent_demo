@@ -1,0 +1,2 @@
+{"id":"fb0de6c4","type":"shutdown","target":"alice","status":"pending","data":{},"reason":null,"timestamp":1777711532591}
+{"id":"fb0de6c4","type":"shutdown","target":"alice","status":"timeout","data":{},"reason":"No response within PT30S","timestamp":1777711532591}
