@@ -14,6 +14,7 @@ public class Task {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)  // serialize only, skip on deserialization
     private List<Integer> blocks = new ArrayList<>();  // computed, not persisted
     private String owner;
+    private String worktree;  // s12: bound worktree name
 
     public int getId()                          { return id; }
     public void setId(int id)                   { this.id = id; }
@@ -29,4 +30,6 @@ public class Task {
     public void setBlocks(List<Integer> l)      { this.blocks = l; }
     public String getOwner()                    { return owner; }
     public void setOwner(String owner)          { this.owner = owner; }
+    public String getWorktree()                 { return worktree; }
+    public void setWorktree(String worktree)    { this.worktree = worktree; }
 }

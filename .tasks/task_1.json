@@ -1,0 +1,10 @@
+{
+  "id" : 1,
+  "subject" : "Implement backend authentication system",
+  "description" : "Create authentication endpoints including login, logout, register, and session validation. Implement JWT token generation and validation, password hashing with BCrypt, and session management.",
+  "status" : "pending",
+  "blockedBy" : [ ],
+  "blocks" : [ ],
+  "owner" : "",
+  "worktree" : "auth-refactor"
+}

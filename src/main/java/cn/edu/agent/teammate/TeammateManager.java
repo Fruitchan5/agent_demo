@@ -9,6 +9,8 @@ import cn.edu.agent.teammate.protocol.ProtocolManager;
 import cn.edu.agent.tool.AgentRole;
 import cn.edu.agent.tool.AgentTool;
 import cn.edu.agent.tool.ToolRegistry;
+import cn.edu.agent.worktree.WorktreeInfo;
+import cn.edu.agent.worktree.WorktreeManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -32,9 +34,10 @@ public class TeammateManager {
     private final LlmClient llmClient;
     private final ToolRegistry toolRegistry;
     private final TaskManager taskManager;  // s11: for autonomous task claiming
+    private final WorktreeManager worktreeManager;  // s12: for worktree isolation
     private final Map<String, TeammateSession> sessions = new ConcurrentHashMap<>();
 
-    public TeammateManager(Path teamDir, ToolRegistry toolRegistry, TaskManager taskManager) {
+    public TeammateManager(Path teamDir, ToolRegistry toolRegistry, TaskManager taskManager, WorktreeManager worktreeManager) {
         this.teamDir = teamDir;
         this.configPath = teamDir.resolve("config.json");
         this.config = TeamConfig.load(configPath);
@@ -46,6 +49,7 @@ public class TeammateManager {
         }
         this.toolRegistry = toolRegistry;
         this.taskManager = taskManager;
+        this.worktreeManager = worktreeManager;
         this.llmClient = new LlmClient();
 
         this.executor = Executors.newCachedThreadPool(r -> {
@@ -202,18 +206,28 @@ public class TeammateManager {
                     // 认领到任务，恢复工作
                     cn.edu.agent.task.Task task = pollResult.getClaimedTask();
 
+                    // s12: 创建worktree进行隔离
+                    String worktreeName = "task-" + task.getId() + "-" + name;
+                    try {
+                        WorktreeInfo wtInfo = worktreeManager.create(worktreeName, task.getId(), "HEAD");
+                        System.out.println("[" + name + "] Created worktree: " + wtInfo.getPath());
+                    } catch (Exception e) {
+                        System.err.println("[" + name + "] Failed to create worktree: " + e.getMessage());
+                        // 继续执行，即使worktree创建失败
+                    }
+
                     // 检查是否需要重注入身份
                     IdentityManager.reinjectIdentity(messages, name, role, teamName);
 
                     // 添加任务提示
                     String taskPrompt = String.format(
-                        "<auto-claimed>Task #%d: %s\n%s</auto-claimed>",
-                        task.getId(), task.getSubject(), task.getDescription()
+                        "<auto-claimed>Task #%d: %s\n%s\nWorktree: %s</auto-claimed>",
+                        task.getId(), task.getSubject(), task.getDescription(), worktreeName
                     );
                     messages.add(Map.of("role", "user", "content", taskPrompt));
                     messages.add(Map.of(
                         "role", "assistant",
-                        "content", "Claimed task #" + task.getId() + ". Working on it."
+                        "content", "Claimed task #" + task.getId() + " in worktree '" + worktreeName + "'. Working on it."
                     ));
 
                     updateMemberStatus(name, "WORKING");

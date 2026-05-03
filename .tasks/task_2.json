@@ -1,0 +1,10 @@
+{
+  "id" : 2,
+  "subject" : "Build frontend login page",
+  "description" : "Create login UI with username/password fields, form validation, error handling, and integration with backend auth API. Include \"Remember me\" option and password visibility toggle.",
+  "status" : "pending",
+  "blockedBy" : [ 1 ],
+  "blocks" : [ ],
+  "owner" : "",
+  "worktree" : "ui-login"
+}

@@ -1,0 +1,17 @@
+{
+  "worktrees" : [ {
+    "name" : "auth-refactor",
+    "branch" : "wt/auth-refactor",
+    "taskId" : 1,
+    "status" : "ACTIVE",
+    "createdAt" : 1777798559.985740900,
+    "path" : "D:\\ProgramData\\Agent\\agent_demo\\.worktrees\\auth-refactor"
+  }, {
+    "name" : "ui-login",
+    "branch" : "wt/ui-login",
+    "taskId" : 2,
+    "status" : "ACTIVE",
+    "createdAt" : 1777798566.355758900,
+    "path" : "D:\\ProgramData\\Agent\\agent_demo\\.worktrees\\ui-login"
+  } ]
+}

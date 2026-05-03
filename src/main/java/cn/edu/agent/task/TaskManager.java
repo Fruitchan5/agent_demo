@@ -292,4 +292,35 @@ public class TaskManager {
 
         return cluster;
     }
+
+    // ========== s12: Worktree binding methods ==========
+
+    /**
+     * 绑定worktree到任务
+     * @param taskId 任务ID
+     * @param worktreeName worktree名称
+     */
+    public synchronized void bindWorktree(int taskId, String worktreeName) {
+        try {
+            Task task = load(taskId);
+            task.setWorktree(worktreeName);
+            save(task);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to bind worktree to task " + taskId, e);
+        }
+    }
+
+    /**
+     * 解绑任务的worktree
+     * @param taskId 任务ID
+     */
+    public synchronized void unbindWorktree(int taskId) {
+        try {
+            Task task = load(taskId);
+            task.setWorktree(null);
+            save(task);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to unbind worktree from task " + taskId, e);
+        }
+    }
 }

@@ -9,6 +9,8 @@ import cn.edu.agent.teammate.TeammateManager;
 import cn.edu.agent.todo.TodoManager;
 import cn.edu.agent.skill.SkillLoader;
 import cn.edu.agent.tool.impl.*;
+import cn.edu.agent.worktree.WorktreeManager;
+import cn.edu.agent.worktree.WorktreeManagerImpl;
 
 import java.nio.file.Paths;
 
@@ -25,6 +27,7 @@ public class ToolRegistry {
     private final TaskManager taskManager = new TaskManager(Paths.get(".tasks"));
     private final BackgroundTaskManager backgroundTaskManager = new BackgroundTaskManager();
     private final AuthenticationService authenticationService;
+    private final WorktreeManager worktreeManager;
 
     // s09: teammate manager (initialized later to avoid circular dependency)
     private TeammateManager teammateManager;
@@ -33,7 +36,10 @@ public class ToolRegistry {
         // Initialize authentication service
         UserRepository userRepository = new UserRepository(".auth/users.json");
         this.authenticationService = new AuthenticationService(userRepository);
-        
+
+        // s12: Initialize worktree manager
+        this.worktreeManager = new WorktreeManagerImpl(Paths.get(System.getProperty("user.dir")), taskManager);
+
         registerBase(new BashTool());
         registerBase(new ReadFileTool());
         registerBase(new WriteFileTool());
@@ -57,7 +63,8 @@ public class ToolRegistry {
         registerOptionalBase("cn.edu.agent.tool.impl.CompactTool");
         // s09：初始化 TeammateManager 并注册所有团队工具
         // s11：传入 TaskManager 以支持自主任务认领
-        this.teammateManager = new TeammateManager(Paths.get(".team"), this, taskManager);
+        // s12：传入 WorktreeManager 以支持任务隔离
+        this.teammateManager = new TeammateManager(Paths.get(".team"), this, taskManager, worktreeManager);
         registerBase(new SendMessageTool(teammateManager, "lead"));
         registerBase(new ReadInboxTool(teammateManager, "lead"));
         registerParentOnly(new SpawnTeammateTool(teammateManager));
@@ -77,6 +84,13 @@ public class ToolRegistry {
 
         // s11：注册 idle 工具（teammate 可用）
         registerBase(new IdleTool());
+
+        // s12：注册 worktree 工具
+        registerBase(new WorktreeCreateTool(worktreeManager));
+        registerBase(new WorktreeListTool(worktreeManager));
+        registerBase(new WorktreeStatusTool(worktreeManager));
+        registerBase(new WorktreeRemoveTool(worktreeManager));
+        registerBase(new WorktreeKeepTool(worktreeManager));
     }
 
     public ToolRegistry(SkillLoader skillLoader) {
